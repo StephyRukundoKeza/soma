@@ -1,0 +1,8 @@
+pymupdf
+pytesseract
+pillow
+sentence-transformers
+numpy
+python-dotenv
+pytest
+google-genai
