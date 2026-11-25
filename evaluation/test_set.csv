@@ -1,0 +1,31 @@
+id,language,type,question,expected_answer,source,page
+1,en,in_book,What are national and humanistic values?,Values promoted by the government and expected from all of us as human beings,GSCS S4,p. 8
+2,en,in_book,Who is an active listener?,Someone who listens attentively without interrupting the speaker,GSCS S4,p. 12
+3,en,in_book,What is social injustice?,Unfair treatment of people who are marginalised,GSCS S4,p. 17
+4,en,in_book,What is individual identity?,The qualities of a person that make them distinct from others,GSCS S4,p. 22
+5,en,in_book,What are multiple identities?,The various cultural backgrounds one has been socialised to,GSCS S4,p. 23
+6,en,in_book,What is personal responsibility?,A duty to take action and bear the consequences if something goes wrong,GSCS S4,p. 30
+7,en,in_book,What is the difference between leisure and sport?,"Leisure is free time spent away from business, work, domestic chores and education",GSCS S4,p. 33
+8,en,in_book,Which sports competitions bring people together in Rwanda and the region?,"Kigali International Marathon, Umurenge Kagame Cup, CECAF Kagame Cup",GSCS S4,p. 35
+9,en,in_book,What is the difference between oral and non-verbal communication?,Oral communication is verbal; non-verbal communication uses other means,GSCS S4,p. 43
+10,en,in_book,What is visual communication?,"Displaying information through topography, photography, signs, symbols, designs, television and video clips",GSCS S4,p. 44
+11,en,in_book,Why is learning to read and communicate important?,It is the most appropriate way to gain knowledge,GSCS S4,p. 46
+12,en,in_book,What are the barriers to effective communication?,"Noise, language, values, fear, lack of confidence, attitude, cultural differences, hearing problems, wrong message or feedback",GSCS S4,p. 48
+13,en,in_book,What are the main rivers of Rwanda?,"Mwogo, Rukarara, Mukungwa, Base, Ruhondo, Akagera, Nyabarongo, Akanyaru",English S4,PDF p. 6
+14,en,in_book,What is the highest point in Rwanda?,"Karisimbi volcano, 4,507 m",English S4,PDF p. 9
+15,en,in_book,Which is the most mountainous province of Rwanda?,"Northern Province (low temperatures, relatively high rainfall)",English S4,PDF p. 11
+16,en,in_book,"In the example about the seagull and the fish, which is the subject and which is the object?",The seagull is the subject; the fish is the object,English S4,PDF p. 13
+17,en,in_book,"Where does the word ""Agakiriro"" come from?","From the Kinyarwanda word ""gukira"", meaning ""getting rich""",English S4,PDF p. 24
+18,en,in_book,What qualities are necessary for a good friendship?,"Honesty, trustworthiness, loyalty, unconditional acceptance",English S4,PDF p. 65
+19,rw,in_book,Umugani muremure ni iki?,"Ingeri y'ubuvanganzo nyemvugo bwo muri rubanda, yuzuyemo ibidashoboka n'amakabyankuru",Ikinyarwanda S4,p. 6
+20,rw,in_book,Ubuvanganzo bwo muri rubanda ni iki?,"Ibihangano byahimbwe n'abantu ba kera, batandika, babifata mu mutwe",Ikinyarwanda S4,p. 7
+21,rw,in_book,Amavumvu ni iki?,"Amagambo abavumvu babwira inzuki, bazihamagara, bazisingiza",Ikinyarwanda S4,p. 9
+22,rw,in_book,"Umugani ""Kami ka muntu ni umutima we"" bawuca ryari?",Iyo babonye umuntu yiyemeje kwihitiramo icyo bamwe bamubuza,Ikinyarwanda S4,p. 11
+23,rw,in_book,Insigamigani ni iki?,"Ingeri y'ubuvanganzo ifatiye ku muntu wakoze ikintu cyangwa ikintu cyabaye, bigahinduka iciro ry'umugani",Ikinyarwanda S4,p. 14
+24,sw,in_book,Lugha ni nini?,Chombo kinachotumiwa kuwasiliana na kuelewana,Kiswahili S4,p. 5
+25,sw,in_book,Lengo kuu la lugha ni nini?,Kuwezesha watu kutoa fikra zao na kuelezeana mambo ya maisha yao,Kiswahili S4,p. 9
+26,sw,in_book,Kwa nini lugha ni muhimu katika utamaduni?,Lugha ni kipengele cha utamaduni na chombo cha utamaduni,Kiswahili S4,p. 16
+27,sw,in_book,Mjadala ni nini?,"Mazungumzo juu ya jambo fulani, katika makundi, yakiongozwa na mwenyekiti",Kiswahili S4,p. 147
+28,rw,cross_language,Gutega amatwi neza bisobanura iki?,Gutega amatwi witonze utaciye mu ijambo uvuga (answer in Kinyarwanda),GSCS S4,p. 12
+29,en,not_in_book,Who won the 2026 football World Cup?,Not in the book,,
+30,rw,not_in_book,Umurwa mukuru wa Australia ni uwuhe?,Not in the book (answer in Kinyarwanda),,
