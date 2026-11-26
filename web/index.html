@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOMA</title>
+<style>
+  :root { --ink: #111; --muted: #666; --line: #ddd; --soft: #f4f4f4; --bg: #fff; --green: #2e8b57; --yellow: #d9a400; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 12px 14px 120px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand img { height: 40px; width: auto; }
+  .logo { font-family: Georgia, "Times New Roman", serif; font-size: 26px; line-height: 1; letter-spacing: 1px; }
+  .tagline { font-family: Georgia, "Times New Roman", serif; font-size: 10px; letter-spacing: 3px; margin-top: 3px; white-space: nowrap; }
+  .right { display: flex; gap: 8px; align-items: center; }
+  select, input { font: inherit; padding: 10px 12px; border: 1px solid var(--ink); border-radius: 10px; background: var(--bg); color: var(--ink); width: 100%; }
+  header select { width: auto; }
+  .tabs { display: flex; gap: 4px; border: 1px solid var(--ink); border-radius: 12px; padding: 4px; margin-bottom: 10px; }
+  .tabs button { flex: 1; font: inherit; font-size: 14px; border: 0; background: none; padding: 9px 6px; border-radius: 9px; color: var(--ink); cursor: pointer; }
+  .tabs button.on { background: var(--ink); color: var(--bg); font-weight: 600; }
+  .badge { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 99px; border: 1px solid currentColor; margin-left: 4px; vertical-align: middle; white-space: nowrap; }
+  .card { border: 1px solid var(--ink); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  .card h3 { margin: 0 0 4px; font-size: 17px; }
+  .hidden { display: none !important; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .row.end { justify-content: space-between; }
+  .stack { display: flex; flex-direction: column; gap: 10px; }
+  .btn { font: inherit; font-weight: 600; border: 1px solid var(--ink); border-radius: 12px; padding: 10px 16px; background: var(--ink); color: var(--bg); cursor: pointer; }
+  .btn.outline { background: var(--bg); color: var(--ink); }
+  .btn.small { padding: 6px 10px; font-size: 13px; }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .link { background: none; border: 0; font: inherit; text-decoration: underline; cursor: pointer; color: var(--ink); padding: 4px 0; }
+  .progress { display: flex; gap: 6px; margin: 10px 0 6px; }
+  .dot { flex: 1; height: 8px; border-radius: 99px; background: var(--line); cursor: pointer; border: 0; padding: 0; }
+  .dot.done { background: var(--ink); } .dot.now { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .chat { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+  .msg { padding: 10px 12px; border-radius: 12px; white-space: pre-wrap; max-width: 92%; }
+  .msg.soma { background: var(--soft); align-self: flex-start; border-left: 4px solid var(--ink); }
+  .msg.task { background: var(--bg); border: 1px solid var(--ink); border-left-width: 4px; }
+  .msg.me { border: 1px solid var(--ink); align-self: flex-end; }
+  .msg.green { border-left-color: var(--green); } .msg.yellow { border-left-color: var(--yellow); }
+  .flag { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .flag::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--ink); flex: none; }
+  .green .flag::before { background: var(--green); } .yellow .flag::before { background: var(--yellow); }
+  .sources { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+  .thinking { color: var(--muted); font-style: italic; }
+  .spoken { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .credit { font-size: 12px; color: var(--muted); text-align: center; margin: 18px 0 0; }
+  .big { font-size: 22px; font-weight: 700; }
+  .bar3 { display: flex; gap: 4px; margin: 12px 0 4px; }
+  .bar3 span { flex: 1; height: 10px; border-radius: 99px; border: 1px solid var(--ink); }
+  .bar3 span.on { background: var(--ink); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+  .stat { border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
+  .stat b { display: block; font-size: 20px; }
+  .chart svg { width: 100%; height: auto; display: block; }
+  .namebtn { background: none; border: 0; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; padding: 0; color: var(--ink); text-align: left; }
+  .detail { margin-top: 12px; }
+  .measures { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; font-size: 12px; color: var(--muted); }
+  .measures span { display: inline-flex; align-items: center; gap: 4px; }
+  .measures span::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); }
+  .measures span.spoken::before { display: none; }
+  .measures span.green::before { background: var(--green); } .measures span.yellow::before { background: var(--yellow); }
+  .credit a { color: inherit; }
+  .timer { font-variant-numeric: tabular-nums; font-weight: 700; border: 1px solid var(--ink); border-radius: 99px; padding: 2px 10px; font-size: 14px; }
+  form.bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg); border-top: 1px solid var(--ink); }
+  form.bar .inner { max-width: 760px; margin: 0 auto; display: flex; gap: 8px; padding: 10px 14px; }
+  form.bar input { flex: 1; min-width: 0; }
+  .mic { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 48px; }
+  .mic svg { width: 20px; height: 20px; }
+  .mic.recording { background: var(--bg); color: var(--ink); }
+  .mic.recording::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--ink); animation: blink 1s infinite; }
+  .mic.recording svg { display: none; }
+  @keyframes blink { 50% { opacity: .2; } }
+  .login { max-width: 400px; margin: 30px auto 0; display: flex; flex-direction: column; gap: 12px; }
+  label { font-size: 14px; font-weight: 600; display: flex; flex-direction: column; gap: 4px; }
+  .error { font-size: 14px; border-left: 4px solid var(--yellow); padding: 6px 10px; background: var(--soft); }
+  .note { font-size: 14px; border-left: 4px solid var(--green); padding: 6px 10px; background: var(--soft); }
+  .unit { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .unit:last-child { border-bottom: 0; }
+  .page { border-top: 1px solid var(--line); padding: 12px 0; white-space: pre-wrap; }
+  .page small { display: block; color: var(--muted); margin-bottom: 4px; }
+  .code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 28px; letter-spacing: 6px; font-weight: 700; }
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { border-bottom: 1px solid var(--ink); font-size: 13px; }
+  #splash { position: fixed; inset: 0; background: var(--bg); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .5s ease; perspective: 800px; }
+  #splash.gone { opacity: 0; pointer-events: none; }
+  #splash img { width: 180px; height: auto; animation: spin 1.1s cubic-bezier(.2,.7,.3,1) both; }
+  #splash .word { font-family: Georgia, "Times New Roman", serif; font-size: 46px; letter-spacing: 2px; margin-top: 18px; opacity: 0; animation: rise .6s ease 1.1s forwards; }
+  #splash .tag { font-family: Georgia, "Times New Roman", serif; font-size: 13px; letter-spacing: 5px; margin-top: 6px; opacity: 0; animation: rise .6s ease 1.45s forwards; }
+  @keyframes spin { from { transform: rotateY(0deg); } to { transform: rotateY(720deg); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { #splash img, #splash .word, #splash .tag { animation: none; opacity: 1; } }
+  @media (max-width: 420px) { .brand img { height: 32px; } .logo { font-size: 22px; } .tagline { letter-spacing: 2px; font-size: 9px; }
+                              header select { padding: 8px; font-size: 14px; } .tabs button { font-size: 13px; } }
+</style>
+</head>
+<body>
+<div id="splash" aria-hidden="true">
+  <img src="/logo-mark.png" alt="">
+  <div class="word">SOMA</div>
+  <div class="tag">VUGA WIYIZEYE</div>
+</div>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <img src="/logo-mark.png" alt="">
+      <div><div class="logo">SOMA</div><div class="tagline">VUGA WIYIZEYE</div></div>
+    </div>
+    <div class="right">
+      <select id="lang" aria-label="Language">
+        <option value="rw">Kinyarwanda</option><option value="en">English</option>
+        <option value="sw">Kiswahili</option><option value="fr">Français</option>
+      </select>
+      <button class="btn outline small hidden" id="logout" data-t="logout"></button>
+    </div>
+  </header>
+
+  <!-- Login -->
+  <section id="loginScreen">
+    <form class="login" id="loginForm">
+      <div class="tabs" id="roles">
+        <button type="button" data-role="learner" class="on" data-t="learner"></button>
+        <button type="button" data-role="teacher" data-t="teacher"></button>
+      </div>
+      <label><span data-t="username"></span><input id="username" autocomplete="username" required maxlength="100"></label>
+      <label><span data-t="password"></span><input id="password" type="password" autocomplete="current-password" required maxlength="200"></label>
+      <div class="error hidden" id="loginError"></div>
+      <button class="btn" id="loginBtn" data-t="login"></button>
+      <button type="button" class="link" id="toJoin" data-t="joinClass"></button>
+      <p class="credit"><span data-t="speechCredit"></span> <a href="https://huggingface.co/DigitalUmuganda/whisper_small_kinyarwanda" target="_blank" rel="noopener">Digital Umuganda</a></p>
+    </form>
+
+    <form class="login hidden" id="joinForm">
+      <div class="note hidden" id="joinClassName"></div>
+      <label><span data-t="code"></span><input id="joinCode" required minlength="6" maxlength="6" autocomplete="off" style="text-transform:uppercase"></label>
+      <label><span data-t="yourName"></span><input id="joinName" required maxlength="40"></label>
+      <label><span data-t="chooseUsername"></span><input id="joinUsername" required minlength="3" maxlength="40" pattern="[A-Za-z0-9_.\-]+" autocomplete="username"></label>
+      <label><span data-t="choosePassword"></span><input id="joinPassword" type="password" required minlength="8" maxlength="200" autocomplete="new-password"></label>
+      <div class="error hidden" id="joinError"></div>
+      <button class="btn" data-t="join"></button>
+      <button type="button" class="link" id="toLogin" data-t="haveAccount"></button>
+    </form>
+  </section>
+
+  <!-- App -->
+  <section id="appScreen" class="hidden">
+    <div class="row end" style="margin-bottom:8px">
+      <span class="muted" id="hello"></span>
+      <span class="row"><span id="levelBadge" class="badge hidden"></span><span id="timer" class="timer hidden"></span></span>
+    </div>
+
+    <div class="tabs" id="modes">
+      <button data-mode="secondary" class="on" data-t="secondary"></button>
+      <button data-mode="primary"><span data-t="primary"></span><span class="badge" data-t="inDev"></span></button>
+    </div>
+
+    <section id="secondary">
+      <div class="tabs" id="views">
+        <button data-view="classes" class="hidden" data-t="classTab"></button>
+        <button data-view="units" data-t="units"></button>
+        <button data-view="practice" data-t="practice"></button>
+        <button data-view="progress" data-t="progressTab"></button>
+        <button data-view="ask" data-t="ask"></button>
+      </div>
+
+      <!-- Teacher / admin -->
+      <div id="classes" class="hidden">
+        <div class="card hidden" id="adminCard">
+          <h3 data-t="addTeacher"></h3>
+          <form class="stack" id="teacherForm">
+            <input id="tName" required maxlength="40" data-ph="yourName">
+            <input id="tUsername" required minlength="3" maxlength="40" pattern="[A-Za-z0-9_.\-]+" data-ph="username">
+            <input id="tPassword" type="password" required minlength="8" data-ph="password" autocomplete="new-password">
+            <button class="btn" data-t="create"></button>
+            <div class="hidden" id="teacherMsg"></div>
+          </form>
+        </div>
+        <div class="card">
+          <h3 data-t="newClass"></h3>
+          <form class="row" id="classForm">
+            <input id="className" required maxlength="60" data-ph="className" style="flex:2;min-width:160px">
+            <label style="flex:1;min-width:120px;font-weight:400"><span class="muted" data-t="minutes"></span><input id="classMinutes" type="number" min="1" max="120" value="40" required></label>
+            <button class="btn" data-t="create"></button>
+          </form>
+        </div>
+        <div class="row end" style="margin:4px 0 10px"><span></span><button class="btn outline small" id="refresh" data-t="refresh"></button></div>
+        <div id="classList"></div>
+      </div>
+
+      <!-- Units (table of contents) and reading -->
+      <div id="units" class="hidden">
+        <form class="card hidden" id="classCard">
+          <h3 data-t="noClassTitle"></h3>
+          <p class="muted" data-t="noClassText" style="margin:0 0 10px"></p>
+          <div class="row">
+            <input id="myCode" required minlength="6" maxlength="6" autocomplete="off" data-ph="code" style="flex:1;min-width:140px;text-transform:uppercase">
+            <button class="btn" data-t="join"></button>
+          </div>
+          <div class="error hidden" id="myCodeError" style="margin-top:8px"></div>
+        </form>
+        <div id="unitList">
+          <div class="card">
+            <div class="row end">
+              <div><h3 data-t="featured"></h3><div class="muted"><span data-t="skill"></span> · <span data-t="featuredSteps"></span></div></div>
+              <button class="btn small" id="openGuided" data-t="speak"></button>
+            </div>
+          </div>
+          <div class="card"><h3 id="gradeTitle"></h3><div id="unitRows"></div></div>
+        </div>
+        <div id="reader" class="hidden">
+          <div class="row end" style="margin-bottom:8px">
+            <button class="btn outline small" id="readerBack" data-t="back"></button>
+            <button class="btn small" id="readerSpeak" data-t="speak"></button>
+          </div>
+          <div class="card"><h3 id="readerTitle"></h3><div id="readerPages"></div></div>
+        </div>
+      </div>
+
+      <!-- Practice: placement, adaptive tasks, guided skill -->
+      <div id="practice" class="hidden">
+        <div class="card">
+          <div class="row end"><h3 id="practiceTitle"></h3><span id="practiceLevel" class="badge hidden"></span></div>
+          <div class="progress hidden" id="guidedProgress"></div>
+          <p class="muted" id="practiceSub" style="margin:4px 0 0"></p>
+          <div class="row" style="margin-top:10px">
+            <button class="btn hidden" id="sessionBtn"></button>
+            <button class="btn hidden" id="placementBtn" data-t="startPlacement"></button>
+          </div>
+        </div>
+        <div class="chat" id="practiceChat"></div>
+        <div class="row"><button class="btn hidden" id="nextBtn"></button></div>
+        <p class="credit"><span data-t="speechCredit"></span> <a href="https://huggingface.co/DigitalUmuganda/whisper_small_kinyarwanda" target="_blank" rel="noopener">Digital Umuganda</a></p>
+      </div>
+
+      <div id="progress" class="hidden"><div id="myProgress"></div></div>
+
+      <div id="ask" class="hidden"><div class="chat" id="askChat"></div></div>
+    </section>
+
+    <section id="primary" class="hidden">
+      <div class="card"><p><strong data-t="primary"></strong> <span class="badge" data-t="inDev"></span></p><p data-t="primaryText"></p></div>
+    </section>
+  </section>
+</div>
+
+<form class="bar hidden" id="bar">
+  <div class="inner">
+    <input id="input" autocomplete="off" maxlength="1000">
+    <button type="button" class="btn mic" id="mic" aria-label="Record">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      <span id="micTime"></span>
+    </button>
+    <button class="btn" id="send" data-t="send"></button>
+  </div>
+</form>
+
+<script>
+const TEXT = {
+  en: {
+    learner: "Learner", teacher: "Teacher", username: "Username", password: "Password", login: "Log in", logout: "Log out", hello: "Hello",
+    secondary: "Secondary (S4)", primary: "Primary (P1–P3)", inDev: "In development",
+    classTab: "My classes", units: "Units", practice: "Practice", ask: "Ask SOMA", send: "Send",
+    read: "Read", speak: "Practise speaking", back: "Back", unit: "Unit", grade: "Senior 4",
+    featured: "Guided skill", featuredSteps: "6 steps", skill: "Disagreeing politely", step: "Step", of: "of",
+    level: "Level", levelNames: ["Starting", "Growing", "Confident"],
+    placementTitle: "Let’s find your level", placementIntro: "Answer 3 short tasks, by speaking or writing. There is no wrong answer: SOMA uses them to choose tasks that fit you.",
+    startPlacement: "Start", task: "Task", nextTask: "Next task", finishPlacement: "See my level", yourLevel: "Your level",
+    levelUp: "Well done! The next tasks will be a little harder and longer.", levelDown: "The next tasks will be a little easier, so you can build up again.",
+    sessionStart: "Start a {m}-minute session", sessionNeeded: "Start a session to practise.", sessionOver: "Time is up!",
+    sessionSummary: "Tasks done: {t} · passed: {p}", sentToTeacher: "Your results were sent to your teacher.", newSession: "Start a new session",
+    joinClass: "Join a class with a code", haveAccount: "I already have an account", code: "Class code", yourName: "First name or nickname",
+    chooseUsername: "Choose a username", choosePassword: "Choose a password (at least 8 characters)", join: "Join", joiningClass: "You are joining:",
+    newClass: "New class", className: "Class name", minutes: "Session length (minutes)", create: "Create", save: "Save",
+    joinLink: "Join link", copy: "Copy", copied: "Copied", addStudent: "Add a learner", learnersWord: "learners", refresh: "Refresh results",
+    colName: "Learner", colLevel: "Level", colTime: "Practice (7 days)", colTasks: "Tasks passed", colWpm: "Words/min", colLast: "Last active",
+    needsHelp: "Needs help", noLearners: "No learners yet. Share the code or add learners.", noClasses: "Create your first class.",
+    addTeacher: "Add a teacher", created: "Created.", min: "min",
+    scen_debate: "Debate", scen_interview: "Interview", scen_presentation: "Presentation",
+    speedLabel: "Speed", pausesLabel: "Pauses", fillersLabel: "Fillers (um…)", phrasesLabel: "Polite phrases", noneWord: "none", goodRange: "good",
+    pausesPerMin: "Pauses per minute", fillersPer100: "Fillers per 100 words", progressTab: "My progress", startedAt: "Starting level", nowAt: "Current level", stepInLevel: "Step {s} of 3 in level {l}",
+    topLevel: "Top level", daysPractised: "Days practised", minutesTotal: "Minutes", tasksPassed: "Tasks passed", speed: "Words/min",
+    levelOverTime: "Level over time (last 30 days)", noProgress: "No practice yet. Start a session to see your progress here.",
+    guidedDone: "Guided skill: {n} of 6 steps", colDay: "Day", close: "Close", notPlaced: "No placement check yet",
+    speechCredit: "Kinyarwanda speech recognition by", noClassTitle: "You are not in a class yet", noClassText: "Ask your teacher for the class code and enter it here, so your teacher can follow your progress.",
+    err_already_in_class: "You are already in a class.",
+    tryHere: "Speak or write your answer…", askHere: "Ask a question about your books…", sources: "From your books:", thinking: "SOMA is thinking…",
+    wellDone: "Well done!", notYet: "Not yet. Try again with the hint.", allDone: "You finished all the steps!",
+    spoken: "Spoken", wpm: "words per minute", micError: "The microphone is not available. Allow it in your browser.", heardNothing: "SOMA did not hear anything. Try again.",
+    err_wrong_login: "Wrong username or password.", err_wrong_role: "This account uses the other login.", err_username_taken: "This username is already taken.",
+    err_bad_code: "This class code does not exist.", err_short_password: "The password needs at least 8 characters.", err_not_allowed: "You cannot do this.",
+    err_expired: "Please log in again.", err_generic: "Something went wrong. Check the details and try again.",
+    primaryText: "Group reading for P1–P3 learners on a shared computer: they read aloud together, see green when it is right and yellow when it is “not yet, raise your hand for the teacher”. This is our next pilot.",
+    langNames: { en: "English", rw: "Kinyarwanda", sw: "Kiswahili", fr: "French" },
+    steps: [["Listen before you answer", "Show that you heard the other person before giving your own view."],
+            ["Accept what is right in their view", "Say what you agree with, or why their view makes sense, before disagreeing."],
+            ["Soften your words", "Use polite words to disagree: could, would, I think, I’m not sure, please."],
+            ["Disagree with the idea, not the person", "Criticise the idea and give a reason, without belittling the person."],
+            ["Formal or informal?", "Choose the right tone: formal with a teacher or leader, less formal with a friend."],
+            ["Put it all together", "In a short real situation, listen, accept, soften, give a reason and fit the tone."]] },
+  rw: {
+    learner: "Umunyeshuri", teacher: "Mwarimu", username: "Izina ukoresha", password: "Ijambo ry’ibanga", login: "Injira", logout: "Sohoka", hello: "Muraho",
+    secondary: "Amashuri yisumbuye (S4)", primary: "Amashuri abanza (P1–P3)", inDev: "Biracyategurwa",
+    classTab: "Amatsinda yanjye", units: "Imitwe", practice: "Imyitozo", ask: "Baza SOMA", send: "Ohereza",
+    read: "Soma", speak: "Itoze kuvuga", back: "Subira inyuma", unit: "Umutwe", grade: "Umwaka wa 4",
+    featured: "Ubumenyi buyobowe", featuredSteps: "Intambwe 6", skill: "Kutemeranya mu kinyabupfura", step: "Intambwe", of: "kuri",
+    level: "Urwego", levelNames: ["Gutangira", "Gukura", "Kwizera"],
+    placementTitle: "Reka tumenye urwego rwawe", placementIntro: "Subiza imyitozo 3 migufi, uvuga cyangwa wandika. Nta gisubizo kibi: SOMA ibikoresha kugira ngo iguhitiremo imyitozo ikubereye.",
+    startPlacement: "Tangira", task: "Umwitozo", nextTask: "Umwitozo ukurikira", finishPlacement: "Reba urwego rwanjye", yourLevel: "Urwego rwawe",
+    levelUp: "Ni byiza cyane! Imyitozo ikurikira iraba ikomeye kandi ndende gato.", levelDown: "Imyitozo ikurikira iraba yoroshye gato, kugira ngo wongere wiyubake.",
+    sessionStart: "Tangira isomo ry’iminota {m}", sessionNeeded: "Tangira isomo kugira ngo wimenyereze.", sessionOver: "Igihe kirarangiye!",
+    sessionSummary: "Imyitozo wakoze: {t} · watsinze: {p}", sentToTeacher: "Ibisubizo byawe byoherejwe kwa mwarimu.", newSession: "Tangira irindi somo",
+    joinClass: "Injira mu itsinda ukoresheje kode", haveAccount: "Mfite konti", code: "Kode y’itsinda", yourName: "Izina ryawe cyangwa akazina",
+    chooseUsername: "Hitamo izina ukoresha", choosePassword: "Hitamo ijambo ry’ibanga (nibura inyuguti 8)", join: "Injira", joiningClass: "Urinjira muri:",
+    newClass: "Itsinda rishya", className: "Izina ry’itsinda", minutes: "Igihe cy’isomo (iminota)", create: "Kora", save: "Bika",
+    joinLink: "Ihuza ryo kwinjira", copy: "Koporora", copied: "Byakoporowe", addStudent: "Ongeramo umunyeshuri", learnersWord: "abanyeshuri", refresh: "Vugurura ibisubizo",
+    colName: "Umunyeshuri", colLevel: "Urwego", colTime: "Imyitozo (iminsi 7)", colTasks: "Yatsinze", colWpm: "Amagambo/umunota", colLast: "Aheruka",
+    needsHelp: "Akeneye ubufasha", noLearners: "Nta munyeshuri uraza. Sangiza kode cyangwa wongeremo abanyeshuri.", noClasses: "Kora itsinda ryawe rya mbere.",
+    addTeacher: "Ongeramo mwarimu", created: "Byakozwe.", min: "min",
+    scen_debate: "Ikiganiro mpaka", scen_interview: "Ikiganiro mbazwa", scen_presentation: "Kumurika igitekerezo",
+    speedLabel: "Umuvuduko", pausesLabel: "Uduhagararo", fillersLabel: "Amagambo yuzuza (eee…)", phrasesLabel: "Imvugo y’ikinyabupfura", noneWord: "nta na kimwe", goodRange: "byiza",
+    pausesPerMin: "Uduhagararo ku munota", fillersPer100: "Amagambo yuzuza ku 100", progressTab: "Aho ngeze", startedAt: "Urwego rwa mbere", nowAt: "Urwego rw’ubu", stepInLevel: "Intambwe {s} kuri 3 mu rwego {l}",
+    topLevel: "Urwego rwo hejuru", daysPractised: "Iminsi y’imyitozo", minutesTotal: "Iminota", tasksPassed: "Imyitozo yatsinzwe", speed: "Amagambo/umunota",
+    levelOverTime: "Urwego mu gihe (iminsi 30 ishize)", noProgress: "Nta myitozo uragira. Tangira isomo kugira ngo urebe aho ugeze.",
+    guidedDone: "Ubumenyi buyobowe: intambwe {n} kuri 6", colDay: "Umunsi", close: "Funga", notPlaced: "Ntarakora isuzuma ry’urwego",
+    speechCredit: "Kumva Ikinyarwanda kuvugwa bikorwa na", noClassTitle: "Ntabwo uri mu itsinda", noClassText: "Saba mwarimu wawe kode y’itsinda uyinjize hano, kugira ngo ajye abona aho ugeze.",
+    err_already_in_class: "Usanzwe uri mu itsinda.",
+    tryHere: "Vuga cyangwa wandike igisubizo cyawe…", askHere: "Baza ikibazo ku bitabo byawe…", sources: "Biri mu bitabo byawe:", thinking: "SOMA iratekereza…",
+    wellDone: "Ni byiza cyane!", notYet: "Ntibiraba. Ongera ugerageze ukoresheje inama.", allDone: "Warangije intambwe zose!",
+    spoken: "Byavuzwe", wpm: "amagambo ku munota", micError: "Mikoro ntiboneka. Yemerere muri mushakisha yawe.", heardNothing: "SOMA ntiyumvise ikintu. Ongera ugerageze.",
+    err_wrong_login: "Izina cyangwa ijambo ry’ibanga si byo.", err_wrong_role: "Iyi konti yinjirira ku rundi ruhande.", err_username_taken: "Iri zina ryarafashwe.",
+    err_bad_code: "Iyi kode ntibaho.", err_short_password: "Ijambo ry’ibanga rigomba kugira nibura inyuguti 8.", err_not_allowed: "Ntushobora gukora ibi.",
+    err_expired: "Ongera winjire.", err_generic: "Hari ikitagenze neza. Reba ibyo wanditse wongere ugerageze.",
+    primaryText: "Gusoma mu matsinda ku banyeshuri bo mu mwaka wa mbere kugeza mu wa gatatu, kuri mudasobwa imwe: basoma mu ijwi riranguruye hamwe, bakabona icyatsi iyo ari byo, n’umuhondo iyo “bitaraba, zamura ukuboko usabe mwarimu ubufasha”. Iki ni cyo gikorwa cyacu gikurikira.",
+    langNames: { en: "Icyongereza", rw: "Ikinyarwanda", sw: "Igiswahili", fr: "Igifaransa" },
+    steps: [["Tega amatwi mbere yo gusubiza", "Erekana ko wumvise undi mbere yo kuvuga igitekerezo cyawe."],
+            ["Emera ukuri kuri mu gitekerezo cye", "Vuga icyo mwemeranyaho, cyangwa impamvu igitekerezo cye gifite ishingiro, mbere yo kutemeranya na we."],
+            ["Oroshya amagambo yawe", "Koresha amagambo y’ikinyabupfura mu kutemeranya: Mbabarira, Ndumva, Wenda, Simbizi neza ariko…"],
+            ["Nenga igitekerezo, si umuntu", "Nenga igitekerezo kandi utange impamvu, udasuzuguye umuntu."],
+            ["Mu buryo bw’icyubahiro cyangwa busanzwe?", "Hitamo imvugo ikwiye: ubwira mwarimu cyangwa umuyobozi ukoresheje “mwe”, inshuti ukayibwira bisanzwe."],
+            ["Byose hamwe", "Mu kiganiro gito: tega amatwi, emera, oroshya amagambo, tanga impamvu kandi uhuze imvugo n’uwo muvugana."]] },
+  sw: {
+    learner: "Mwanafunzi", teacher: "Mwalimu", username: "Jina la mtumiaji", password: "Nenosiri", login: "Ingia", logout: "Toka", hello: "Habari",
+    secondary: "Sekondari (S4)", primary: "Msingi (P1–P3)", inDev: "Inaandaliwa",
+    classTab: "Madarasa yangu", units: "Mada", practice: "Mazoezi", ask: "Uliza SOMA", send: "Tuma",
+    read: "Soma", speak: "Jizoeze kuzungumza", back: "Rudi", unit: "Mada", grade: "Kidato cha 4",
+    featured: "Ujuzi unaoongozwa", featuredSteps: "Hatua 6", skill: "Kutokubaliana kwa adabu", step: "Hatua", of: "kati ya",
+    level: "Kiwango", levelNames: ["Mwanzo", "Kukua", "Kujiamini"],
+    placementTitle: "Tujue kiwango chako", placementIntro: "Jibu kazi 3 fupi, kwa kuzungumza au kuandika. Hakuna jibu baya: SOMA inazitumia kuchagua kazi zinazokufaa.",
+    startPlacement: "Anza", task: "Kazi", nextTask: "Kazi inayofuata", finishPlacement: "Ona kiwango changu", yourLevel: "Kiwango chako",
+    levelUp: "Hongera! Kazi zinazofuata zitakuwa ngumu na ndefu kidogo.", levelDown: "Kazi zinazofuata zitakuwa rahisi kidogo, ili ujenge tena.",
+    sessionStart: "Anza kipindi cha dakika {m}", sessionNeeded: "Anza kipindi ili ujizoeze.", sessionOver: "Muda umekwisha!",
+    sessionSummary: "Kazi ulizofanya: {t} · umefaulu: {p}", sentToTeacher: "Matokeo yako yametumwa kwa mwalimu wako.", newSession: "Anza kipindi kipya",
+    joinClass: "Jiunge na darasa kwa msimbo", haveAccount: "Nina akaunti tayari", code: "Msimbo wa darasa", yourName: "Jina lako la kwanza au la utani",
+    chooseUsername: "Chagua jina la mtumiaji", choosePassword: "Chagua nenosiri (angalau herufi 8)", join: "Jiunge", joiningClass: "Unajiunga na:",
+    newClass: "Darasa jipya", className: "Jina la darasa", minutes: "Muda wa kipindi (dakika)", create: "Unda", save: "Hifadhi",
+    joinLink: "Kiungo cha kujiunga", copy: "Nakili", copied: "Imenakiliwa", addStudent: "Ongeza mwanafunzi", learnersWord: "wanafunzi", refresh: "Sasisha matokeo",
+    colName: "Mwanafunzi", colLevel: "Kiwango", colTime: "Mazoezi (siku 7)", colTasks: "Amefaulu", colWpm: "Maneno/dakika", colLast: "Mara ya mwisho",
+    needsHelp: "Anahitaji msaada", noLearners: "Hakuna wanafunzi bado. Shiriki msimbo au ongeza wanafunzi.", noClasses: "Unda darasa lako la kwanza.",
+    addTeacher: "Ongeza mwalimu", created: "Imeundwa.", min: "dak",
+    scen_debate: "Mjadala", scen_interview: "Mahojiano", scen_presentation: "Wasilisho",
+    speedLabel: "Kasi", pausesLabel: "Vituo", fillersLabel: "Maneno ya kujaza (eee…)", phrasesLabel: "Maneno ya adabu", noneWord: "hakuna", goodRange: "nzuri",
+    pausesPerMin: "Vituo kwa dakika", fillersPer100: "Maneno ya kujaza kwa 100", progressTab: "Maendeleo yangu", startedAt: "Kiwango cha mwanzo", nowAt: "Kiwango cha sasa", stepInLevel: "Hatua {s} kati ya 3 katika kiwango {l}",
+    topLevel: "Kiwango cha juu", daysPractised: "Siku za mazoezi", minutesTotal: "Dakika", tasksPassed: "Kazi zilizofaulu", speed: "Maneno/dakika",
+    levelOverTime: "Kiwango kwa muda (siku 30 zilizopita)", noProgress: "Bado hakuna mazoezi. Anza kipindi ili uone maendeleo yako hapa.",
+    guidedDone: "Ujuzi unaoongozwa: hatua {n} kati ya 6", colDay: "Siku", close: "Funga", notPlaced: "Bado hajapimwa kiwango",
+    speechCredit: "Utambuzi wa sauti ya Kinyarwanda umetolewa na", noClassTitle: "Bado hauko kwenye darasa", noClassText: "Muombe mwalimu wako msimbo wa darasa na uuandike hapa, ili mwalimu wako aweze kufuatilia maendeleo yako.",
+    err_already_in_class: "Tayari uko kwenye darasa.",
+    tryHere: "Sema au andika jibu lako…", askHere: "Uliza swali kuhusu vitabu vyako…", sources: "Kutoka kwenye vitabu vyako:", thinking: "SOMA inafikiri…",
+    wellDone: "Hongera!", notYet: "Bado. Jaribu tena ukitumia kidokezo.", allDone: "Umemaliza hatua zote!",
+    spoken: "Imesemwa", wpm: "maneno kwa dakika", micError: "Kipaza sauti hakipatikani. Kiruhusu kwenye kivinjari chako.", heardNothing: "SOMA haikusikia chochote. Jaribu tena.",
+    err_wrong_login: "Jina au nenosiri si sahihi.", err_wrong_role: "Akaunti hii inatumia upande mwingine wa kuingia.", err_username_taken: "Jina hili limeshachukuliwa.",
+    err_bad_code: "Msimbo huu haupo.", err_short_password: "Nenosiri linahitaji angalau herufi 8.", err_not_allowed: "Huwezi kufanya hivi.",
+    err_expired: "Tafadhali ingia tena.", err_generic: "Kuna tatizo. Angalia maelezo na ujaribu tena.",
+    primaryText: "Kusoma kwa vikundi kwa wanafunzi wa P1–P3 kwenye kompyuta moja: wanasoma kwa sauti pamoja, wanaona kijani ikiwa ni sahihi na manjano ikiwa ni “bado, inua mkono umwite mwalimu”. Huu ni mradi wetu wa majaribio unaofuata.",
+    langNames: { en: "Kiingereza", rw: "Kinyarwanda", sw: "Kiswahili", fr: "Kifaransa" },
+    steps: [["Sikiliza kabla ya kujibu", "Onyesha kwamba umemsikia mwenzako kabla ya kutoa maoni yako."],
+            ["Kubali kilicho sahihi katika maoni yake", "Sema unachokubaliana nacho, au kwa nini maoni yake yana mantiki, kabla ya kupinga."],
+            ["Lainisha maneno yako", "Tumia maneno ya adabu unapopinga: Samahani, Nadhani, Labda, Tafadhali…"],
+            ["Pinga wazo, si mtu", "Kosoa wazo na utoe sababu, bila kumdharau mtu."],
+            ["Rasmi au si rasmi?", "Chagua mtindo unaofaa: rasmi kwa mwalimu au kiongozi, wa kawaida kwa rafiki."],
+            ["Unganisha yote", "Katika hali fupi halisi: sikiliza, kubali, lainisha, toa sababu na tumia mtindo unaofaa."]] },
+  fr: {
+    learner: "Élève", teacher: "Enseignant", username: "Nom d’utilisateur", password: "Mot de passe", login: "Se connecter", logout: "Se déconnecter", hello: "Bonjour",
+    secondary: "Secondaire (S4)", primary: "Primaire (P1–P3)", inDev: "En développement",
+    classTab: "Mes classes", units: "Chapitres", practice: "S’entraîner", ask: "Demande à SOMA", send: "Envoyer",
+    read: "Lire", speak: "S’entraîner à parler", back: "Retour", unit: "Chapitre", grade: "4e année secondaire",
+    featured: "Compétence guidée", featuredSteps: "6 étapes", skill: "Exprimer son désaccord poliment", step: "Étape", of: "sur",
+    level: "Niveau", levelNames: ["Débutant", "En progrès", "Assuré"],
+    placementTitle: "Trouvons ton niveau", placementIntro: "Réponds à 3 petites tâches, à l’oral ou à l’écrit. Il n’y a pas de mauvaise réponse : SOMA s’en sert pour choisir des tâches à ta mesure.",
+    startPlacement: "Commencer", task: "Tâche", nextTask: "Tâche suivante", finishPlacement: "Voir mon niveau", yourLevel: "Ton niveau",
+    levelUp: "Bravo ! Les prochaines tâches seront un peu plus difficiles et plus longues.", levelDown: "Les prochaines tâches seront un peu plus faciles, pour reprendre confiance.",
+    sessionStart: "Commencer une séance de {m} minutes", sessionNeeded: "Commence une séance pour t’entraîner.", sessionOver: "Le temps est écoulé !",
+    sessionSummary: "Tâches faites : {t} · réussies : {p}", sentToTeacher: "Tes résultats ont été envoyés à ton enseignant.", newSession: "Commencer une nouvelle séance",
+    joinClass: "Rejoindre une classe avec un code", haveAccount: "J’ai déjà un compte", code: "Code de la classe", yourName: "Prénom ou surnom",
+    chooseUsername: "Choisis un nom d’utilisateur", choosePassword: "Choisis un mot de passe (au moins 8 caractères)", join: "Rejoindre", joiningClass: "Tu rejoins :",
+    newClass: "Nouvelle classe", className: "Nom de la classe", minutes: "Durée de la séance (minutes)", create: "Créer", save: "Enregistrer",
+    joinLink: "Lien pour rejoindre", copy: "Copier", copied: "Copié", addStudent: "Ajouter un élève", learnersWord: "élèves", refresh: "Actualiser les résultats",
+    colName: "Élève", colLevel: "Niveau", colTime: "Pratique (7 jours)", colTasks: "Réussies", colWpm: "Mots/min", colLast: "Dernière activité",
+    needsHelp: "A besoin d’aide", noLearners: "Aucun élève pour l’instant. Partage le code ou ajoute des élèves.", noClasses: "Crée ta première classe.",
+    addTeacher: "Ajouter un enseignant", created: "Créé.", min: "min",
+    scen_debate: "Débat", scen_interview: "Entretien", scen_presentation: "Exposé",
+    speedLabel: "Débit", pausesLabel: "Pauses", fillersLabel: "Mots de remplissage (euh…)", phrasesLabel: "Formules polies", noneWord: "aucune", goodRange: "idéal",
+    pausesPerMin: "Pauses par minute", fillersPer100: "Mots de remplissage pour 100", progressTab: "Mes progrès", startedAt: "Niveau de départ", nowAt: "Niveau actuel", stepInLevel: "Étape {s} sur 3 du niveau {l}",
+    topLevel: "Niveau le plus haut", daysPractised: "Jours d’entraînement", minutesTotal: "Minutes", tasksPassed: "Tâches réussies", speed: "Mots/min",
+    levelOverTime: "Niveau dans le temps (30 derniers jours)", noProgress: "Pas encore d’entraînement. Commence une séance pour voir tes progrès ici.",
+    guidedDone: "Compétence guidée : {n} étapes sur 6", colDay: "Jour", close: "Fermer", notPlaced: "Pas encore de test de niveau",
+    speechCredit: "Reconnaissance vocale du kinyarwanda par", noClassTitle: "Tu n’es pas encore dans une classe", noClassText: "Demande le code de la classe à ton enseignant et saisis-le ici, pour qu’il puisse suivre tes progrès.",
+    err_already_in_class: "Tu es déjà dans une classe.",
+    tryHere: "Dis ou écris ta réponse…", askHere: "Pose une question sur tes livres…", sources: "Dans tes livres :", thinking: "SOMA réfléchit…",
+    wellDone: "Bravo !", notYet: "Pas encore. Réessaie avec l’indice.", allDone: "Tu as terminé toutes les étapes !",
+    spoken: "Dit à voix haute", wpm: "mots par minute", micError: "Le micro n’est pas disponible. Autorise-le dans ton navigateur.", heardNothing: "SOMA n’a rien entendu. Réessaie.",
+    err_wrong_login: "Nom d’utilisateur ou mot de passe incorrect.", err_wrong_role: "Ce compte utilise l’autre connexion.", err_username_taken: "Ce nom d’utilisateur est déjà pris.",
+    err_bad_code: "Ce code de classe n’existe pas.", err_short_password: "Le mot de passe doit avoir au moins 8 caractères.", err_not_allowed: "Tu ne peux pas faire ça.",
+    err_expired: "Reconnecte-toi.", err_generic: "Un problème est survenu. Vérifie les informations et réessaie.",
+    primaryText: "Lecture en groupe pour les élèves de P1–P3 sur un ordinateur partagé : ils lisent à voix haute ensemble, voient du vert quand c’est juste et du jaune quand ce n’est « pas encore, lève la main pour appeler l’enseignant ». C’est notre prochain pilote.",
+    langNames: { en: "anglais", rw: "kinyarwanda", sw: "kiswahili", fr: "français" },
+    steps: [["Écouter avant de répondre", "Montrer que tu as entendu l’autre avant de donner ton avis."],
+            ["Reconnaître ce qui est juste dans son avis", "Dire ce avec quoi tu es d’accord, ou pourquoi son avis a du sens, avant d’exprimer ton désaccord."],
+            ["Adoucir tes mots", "Utiliser des mots polis pour exprimer ton désaccord : Excuse-moi, Je pense que, Peut-être que…"],
+            ["Critiquer l’idée, pas la personne", "Critiquer l’idée et donner une raison, sans rabaisser la personne."],
+            ["Formel ou informel ?", "Choisir le bon ton : vouvoyer un enseignant ou un responsable, tutoyer un ami."],
+            ["Tout mettre ensemble", "Dans une courte situation réelle : écouter, reconnaître, adoucir, donner une raison et adapter le ton."]] },
+};
+
+// ---------- State ----------
+const store = {
+  get(key, fallback) { try { return JSON.parse(sessionStorage.getItem("soma." + key) ?? localStorage.getItem("soma." + key)) ?? fallback; } catch { return fallback; } },
+  set(key, value, session) { try { (session ? sessionStorage : localStorage).setItem("soma." + key, JSON.stringify(value)); } catch {} },
+  clear(key) { try { sessionStorage.removeItem("soma." + key); } catch {} },
+};
+let lang = store.get("lang", "rw");
+let role = "learner";
+let user = store.get("user", null);        // {token, id, role, name}; this browser tab only
+let me = null;                             // {class, session_minutes}
+let view = "units";
+let unitsCache = {};
+let busy = false;
+let mode = null;                           // "placement" | "unit" | "guided"
+let placement = null;                      // {n, task, total}
+let task = null;                           // {unit, title, text, tries, history, finished}
+let recent = [];
+let guided = { step: 0, history: [], done: new Set() };
+let session = null;                        // {endsAt, started, tasks, passed, timer}
+let currentUnit = null;
+const STEP_COUNT = 6;
+
+const $ = (id) => document.getElementById(id);
+const t = (key) => TEXT[lang][key];
+const fill = (s, values) => s.replace(/\{(\w)\}/g, (_, k) => values[k]);
+const isStaff = () => user && (user.role === "teacher" || user.role === "admin");
+
+function applyLanguage() {
+  document.documentElement.lang = lang;
+  $("lang").value = lang;
+  document.querySelectorAll("[data-t]").forEach((el) => { el.textContent = t(el.dataset.t); });
+  document.querySelectorAll("[data-ph]").forEach((el) => { el.placeholder = t(el.dataset.ph); });
+  $("input").placeholder = view === "ask" ? t("askHere") : t("tryHere");
+  if (user) $("hello").textContent = `${t("hello")}, ${user.name}` + (me?.class ? ` · ${me.class}` : "");
+  $("gradeTitle").textContent = t("grade");
+  updateSessionButton();
+}
+
+async function api(url, body, method) {
+  const options = { method: method || (body !== undefined ? "POST" : "GET"), headers: { "Content-Type": "application/json" } };
+  if (user) options.headers.Authorization = "Bearer " + user.token;
+  if (body !== undefined) options.body = JSON.stringify(body);
+  const response = await fetch(url, options);
+  const data = await response.json().catch(() => ({}));
+  if (response.status === 401 && user && url !== "/api/login") { logout(t("err_expired")); throw new Error(t("err_expired")); }
+  if (!response.ok) {
+    const code = typeof data.error === "string" ? data.error : "generic";
+    const error = new Error(TEXT[lang]["err_" + code] || (response.status === 503 && data.error) || t("err_generic"));
+    error.status = response.status; throw error;
+  }
+  return data;
+}
+
+function bubble(chatId, who, text, extra = {}) {
+  const div = document.createElement("div");
+  div.className = "msg " + who + (extra.colour ? " " + extra.colour : "");
+  if (extra.flag) { const flag = document.createElement("span"); flag.className = "flag"; flag.textContent = extra.flag; div.appendChild(flag); }
+  div.appendChild(document.createTextNode(text));
+  if (extra.sources?.length) {
+    const label = document.createElement("div"); label.className = "sources"; label.style.paddingLeft = "0"; label.textContent = t("sources");
+    const list = document.createElement("ul"); list.className = "sources";
+    extra.sources.forEach((s) => { const li = document.createElement("li"); li.textContent = s; list.appendChild(li); });
+    div.append(label, list);
+  }
+  $(chatId).appendChild(div);
+  div.scrollIntoView({ behavior: "smooth", block: "end" });
+  return div;
+}
+
+function setBusy(on) { busy = on; $("send").disabled = on; $("mic").disabled = on; }
+function showNext(label, action) { $("nextBtn").textContent = label; $("nextBtn").onclick = action; $("nextBtn").classList.remove("hidden"); }
+function hideNext() { $("nextBtn").classList.add("hidden"); }
+function levelText(level) { return `${t("level")} ${level} · ${t("levelNames")[level - 1]}`; }
+function showLevel(level) {
+  [$("levelBadge"), $("practiceLevel")].forEach((el) => { el.textContent = levelText(level); el.classList.remove("hidden"); });
+}
+
+// ---------- Login and join ----------
+$("roles").addEventListener("click", (event) => {
+  const button = event.target.closest("button"); if (!button) return;
+  role = button.dataset.role;
+  document.querySelectorAll("#roles button").forEach((b) => b.classList.toggle("on", b === button));
+});
+
+$("loginForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  $("loginError").classList.add("hidden"); $("loginBtn").disabled = true;
+  try {
+    user = await api("/api/login", { username: $("username").value, password: $("password").value, role });
+    store.set("user", user, true); $("password").value = ""; startApp();
+  } catch (error) { $("loginError").textContent = error.message; $("loginError").classList.remove("hidden"); }
+  finally { $("loginBtn").disabled = false; }
+});
+
+function showJoin(code) {
+  $("loginForm").classList.add("hidden"); $("joinForm").classList.remove("hidden");
+  if (code) { $("joinCode").value = code.toUpperCase(); lookUpClass(); }
+}
+async function lookUpClass() {
+  const code = $("joinCode").value.trim().toUpperCase();
+  $("joinClassName").classList.add("hidden");
+  if (code.length !== 6) return;
+  try { const data = await api(`/api/join/${encodeURIComponent(code)}`); $("joinClassName").textContent = `${t("joiningClass")} ${data.class}`; $("joinClassName").classList.remove("hidden"); }
+  catch (error) { $("joinError").textContent = error.message; $("joinError").classList.remove("hidden"); }
+}
+$("toJoin").onclick = () => showJoin();
+$("toLogin").onclick = () => { $("joinForm").classList.add("hidden"); $("loginForm").classList.remove("hidden"); };
+$("joinCode").addEventListener("input", () => { $("joinError").classList.add("hidden"); lookUpClass(); });
+$("joinForm").addEventListener("submit", async (event) => {
+  event.preventDefault(); $("joinError").classList.add("hidden");
+  try {
+    user = await api("/api/join", { code: $("joinCode").value.trim().toUpperCase(), name: $("joinName").value.trim(),
+                                    username: $("joinUsername").value.trim(), password: $("joinPassword").value });
+    store.set("user", user, true); history.replaceState(null, "", "/"); startApp();
+  } catch (error) { $("joinError").textContent = error.message; $("joinError").classList.remove("hidden"); }
+});
+
+function logout(message) {
+  if (session) endSession(false, true);
+  user = null; me = null; store.clear("user");
+  $("appScreen").classList.add("hidden"); $("bar").classList.add("hidden"); $("logout").classList.add("hidden");
+  $("loginScreen").classList.remove("hidden"); $("loginForm").classList.remove("hidden"); $("joinForm").classList.add("hidden");
+  $("loginError").classList.toggle("hidden", !message); $("loginError").textContent = message || "";
+  $("levelBadge").classList.add("hidden");
+}
+$("logout").addEventListener("click", () => logout());
+
+async function startApp() {
+  $("loginScreen").classList.add("hidden"); $("appScreen").classList.remove("hidden"); $("logout").classList.remove("hidden");
+  document.querySelector('#views [data-view="classes"]').classList.toggle("hidden", !isStaff());
+  document.querySelector('#views [data-view="progress"]').classList.toggle("hidden", isStaff());
+  $("adminCard").classList.toggle("hidden", user.role !== "admin");
+  applyLanguage();
+  try { me = await api("/api/me"); } catch { me = { session_minutes: 40 }; }
+  showClassCard();
+  try { guided.done = new Set((await api("/api/progress")).done); } catch {}
+  updateSessionButton();
+  switchView(isStaff() ? "classes" : "units");
+  refreshLevel();
+}
+
+// ---------- Class of a learner ----------
+function showClassCard() {
+  $("classCard").classList.toggle("hidden", !user || user.role !== "learner" || Boolean(me?.class));
+  applyLanguage();
+}
+$("classCard").addEventListener("submit", async (event) => {
+  event.preventDefault(); $("myCodeError").classList.add("hidden");
+  try {
+    const data = await api("/api/me/class", { code: $("myCode").value.trim().toUpperCase() });
+    me = { ...me, class: data.class, session_minutes: data.session_minutes };
+    showClassCard();
+  } catch (error) { $("myCodeError").textContent = error.message; $("myCodeError").classList.remove("hidden"); }
+});
+
+// ---------- Navigation ----------
+function switchView(name, opening = true) {
+  view = name;
+  document.querySelectorAll("#views button").forEach((b) => b.classList.toggle("on", b.dataset.view === name));
+  ["classes", "units", "practice", "progress", "ask"].forEach((v) => $(v).classList.toggle("hidden", v !== name));
+  $("bar").classList.toggle("hidden", !(name === "practice" || name === "ask"));
+  $("input").placeholder = name === "ask" ? t("askHere") : t("tryHere");
+  if (name === "classes") loadClasses();
+  if (name === "units") loadUnits();
+  if (name === "progress") loadMyProgress();
+  if (name === "practice" && opening && !mode) openPractice();
+}
+$("views").addEventListener("click", (event) => { const b = event.target.closest("button"); if (b) switchView(b.dataset.view); });
+
+$("modes").addEventListener("click", (event) => {
+  const button = event.target.closest("button"); if (!button) return;
+  const m = button.dataset.mode;
+  document.querySelectorAll("#modes button").forEach((b) => b.classList.toggle("on", b === button));
+  $("secondary").classList.toggle("hidden", m !== "secondary"); $("primary").classList.toggle("hidden", m !== "secondary" ? false : true);
+  $("bar").classList.toggle("hidden", m !== "secondary" || !(view === "practice" || view === "ask"));
+});
+
+$("lang").addEventListener("change", (event) => {
+  lang = event.target.value; store.set("lang", lang); applyLanguage();
+  if (!user) return;
+  mode = null; task = null; recent = []; currentUnit = null; $("practiceChat").innerHTML = ""; hideNext();
+  refreshLevel();
+  if (view === "units") loadUnits();
+  if (view === "practice") openPractice();
+});
+
+// ---------- Units and reading ----------
+async function loadUnits() {
+  $("reader").classList.add("hidden"); $("unitList").classList.remove("hidden");
+  if (!unitsCache[lang]) unitsCache[lang] = (await api(`/api/units?language=${lang}`)).units;
+  const rows = $("unitRows"); rows.innerHTML = "";
+  unitsCache[lang].forEach((unit) => {
+    const row = document.createElement("div"); row.className = "unit";
+    const name = document.createElement("div"); name.innerHTML = `<div class="muted"></div><strong></strong>`;
+    name.querySelector(".muted").textContent = `${t("unit")} ${unit.number}`; name.querySelector("strong").textContent = unit.title;
+    const actions = document.createElement("div"); actions.className = "row";
+    const read = document.createElement("button"); read.className = "btn outline small"; read.textContent = t("read"); read.onclick = () => openReader(unit);
+    const speak = document.createElement("button"); speak.className = "btn small"; speak.textContent = t("speak"); speak.onclick = () => startUnit(unit);
+    actions.append(read, speak); row.append(name, actions); rows.appendChild(row);
+  });
+}
+
+async function openReader(unit) {
+  $("unitList").classList.add("hidden"); $("reader").classList.remove("hidden");
+  $("readerTitle").textContent = `${t("unit")} ${unit.number}: ${unit.title}`; $("readerPages").innerHTML = `<p class="thinking">…</p>`;
+  $("readerSpeak").onclick = () => startUnit(unit);
+  const data = await api(`/api/units/${encodeURIComponent(unit.id)}?language=${lang}`);
+  $("readerPages").innerHTML = "";
+  data.pages.forEach((page) => {
+    const div = document.createElement("div"); div.className = "page";
+    const label = document.createElement("small"); label.textContent = `p. ${page.printed_page || page.page}`;
+    div.append(label, document.createTextNode(page.text)); $("readerPages").appendChild(div);
+  });
+  window.scrollTo({ top: 0 });
+}
+$("readerBack").onclick = () => loadUnits();
+$("openGuided").onclick = async () => {
+  switchView("practice", false);
+  const status = isStaff() ? null : await refreshLevel();
+  if (status && status.needed) return showPlacementIntro();
+  startGuided();
+};
+
+// ---------- Level and placement ----------
+async function refreshLevel() {
+  if (!user || isStaff()) return null;
+  try {
+    const status = await api(`/api/placement?language=${lang}`);
+    if (status.level) showLevel(status.level); else { $("levelBadge").classList.add("hidden"); $("practiceLevel").classList.add("hidden"); }
+    return status;
+  } catch { return null; }
+}
+
+function practiceHeader(title, sub) {
+  $("practiceTitle").textContent = title; $("practiceSub").textContent = sub || "";
+  $("guidedProgress").classList.add("hidden"); $("placementBtn").classList.add("hidden");
+}
+
+async function openPractice() {
+  if (!unitsCache[lang]) unitsCache[lang] = (await api(`/api/units?language=${lang}`)).units;
+  startUnit(currentUnit || unitsCache[lang][0]);
+}
+
+function showPlacementIntro() {
+  mode = "placement"; placement = null; $("practiceChat").innerHTML = ""; hideNext();
+  practiceHeader(t("placementTitle"), t("placementIntro"));
+  $("sessionBtn").classList.add("hidden"); $("placementBtn").classList.remove("hidden");
+}
+$("placementBtn").onclick = () => { $("placementBtn").classList.add("hidden"); placementStep(0); };
+
+async function placementStep(n) {
+  hideNext(); setBusy(true);
+  const wait = bubble("practiceChat", "soma thinking", t("thinking"));
+  try {
+    const data = await api("/api/placement/task", { language: lang, n });
+    wait.remove(); placement = { n, task: data.task, total: data.total };
+    $("practiceSub").textContent = `${t("task")} ${n + 1} ${t("of")} ${data.total}`;
+    bubble("practiceChat", "soma task", data.task, { flag: `${t("task")} ${n + 1} ${t("of")} ${data.total} · ${t("scen_" + data.scenario)}` });
+  } catch (error) { wait.remove(); bubble("practiceChat", "soma", error.message, { colour: "yellow" }); showNext(t("startPlacement"), () => placementStep(n)); }
+  finally { setBusy(false); }
+}
+
+async function placementAnswer(text, spoken) {
+  setBusy(true);
+  const wait = bubble("practiceChat", "soma thinking", t("thinking"));
+  try {
+    const data = await api("/api/placement/answer", { language: lang, n: placement.n, task: placement.task, answer: text, spoken });
+    wait.remove();
+    bubble("practiceChat", "soma", data.reply, data.passed ? { colour: "green", flag: t("wellDone") } : { colour: "yellow" });
+    const n = placement.n; placement.task = null;
+    if (n < placement.total - 1) showNext(t("nextTask"), () => placementStep(n + 1));
+    else showNext(t("finishPlacement"), finishPlacement);
+  } catch (error) { wait.remove(); bubble("practiceChat", "soma", error.message, { colour: "yellow" }); }
+  finally { setBusy(false); }
+}
+
+async function finishPlacement() {
+  hideNext();
+  const data = await api("/api/placement/finish", { language: lang });
+  showLevel(data.level);
+  bubble("practiceChat", "soma", `${t("yourLevel")} (${t("langNames")[lang]}): ${levelText(data.level)}`, { colour: "green", flag: t("wellDone") });
+  mode = null;
+  if (!unitsCache[lang]) unitsCache[lang] = (await api(`/api/units?language=${lang}`)).units;
+  showNext(t("speak"), () => startUnit(currentUnit || unitsCache[lang][0]));
+}
+
+// ---------- Timed sessions ----------
+function updateSessionButton() {
+  const button = $("sessionBtn");
+  if (!user || mode === "placement" || session) { button.classList.add("hidden"); return; }
+  button.textContent = fill(t("sessionStart"), { m: me?.session_minutes || 40 });
+  button.classList.remove("hidden");
+}
+
+async function startSession() {
+  const data = await api("/api/session/start", { language: lang });
+  const now = Date.now();
+  session = { started: now, endsAt: now + data.minutes * 60000, tasks: 0, passed: 0, language: lang };
+  session.timer = setInterval(tickSession, 500); tickSession();
+  $("timer").classList.remove("hidden"); updateSessionButton();
+}
+$("sessionBtn").onclick = async () => {
+  await startSession();
+  $("practiceChat").innerHTML = "";
+  if (mode === "guided") openStep(guided.step); else if (task) newTask();
+};
+
+function tickSession() {
+  const left = Math.max(0, session.endsAt - Date.now());
+  const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
+  $("timer").textContent = `${m}:${String(s).padStart(2, "0")}`;
+  if (left <= 0) endSession(true);
+}
+
+function endSession(timeUp, quiet) {
+  if (!session) return;
+  clearInterval(session.timer);
+  const seconds = Math.min((Date.now() - session.started) / 1000, (session.endsAt - session.started) / 1000);
+  const body = JSON.stringify({ language: session.language, seconds });
+  fetch("/api/session/end", { method: "POST", keepalive: true, body,
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + (user?.token || "") } }).catch(() => {});
+  const done = session; session = null; $("timer").classList.add("hidden");
+  if (quiet) return;
+  if (timeUp) {
+    if ($("mic").classList.contains("recording")) stopRecording(true);
+    bubble("practiceChat", "soma", `${fill(t("sessionSummary"), { t: done.tasks, p: done.passed })}\n${t("sentToTeacher")}`,
+           { colour: "green", flag: t("sessionOver") });
+  }
+  hideNext(); updateSessionButton();
+}
+window.addEventListener("pagehide", () => { if (session) endSession(false, true); });
+
+function needSession() {
+  if (session || isStaff()) return false;
+  bubble("practiceChat", "soma", t("sessionNeeded"), { colour: "yellow" });
+  return true;
+}
+
+// ---------- Adaptive practice by unit ----------
+async function startUnit(unit) {
+  switchView("practice", false);
+  currentUnit = unit;
+  const status = isStaff() ? null : await refreshLevel();
+  if (status && status.needed) return showPlacementIntro();     // placement first, then this unit
+  mode = "unit"; recent = []; $("practiceChat").innerHTML = ""; hideNext();
+  practiceHeader(`${t("unit")} ${unit.number}: ${unit.title}`, "");
+  task = { unit: unit.id };
+  updateSessionButton();
+  if (session || isStaff()) newTask();
+}
+
+async function newTask() {
+  hideNext();
+  if (needSession()) return;
+  setBusy(true);
+  const wait = bubble("practiceChat", "soma thinking", t("thinking"));
+  try {
+    const data = await api("/api/task/new", { language: lang, unit: currentUnit.id, recent });
+    wait.remove();
+    task = { unit: currentUnit.id, text: data.task, scenario: data.scenario, tries: 1, history: [], finished: false };
+    recent.push(data.task.slice(0, 160));
+    if (!isStaff()) showLevel(data.level);
+    bubble("practiceChat", "soma task", data.task, { flag: `${t("scen_" + data.scenario)} · ${levelText(data.level)}` });
+  } catch (error) { wait.remove(); bubble("practiceChat", "soma", error.message, { colour: "yellow" }); showNext(t("nextTask"), newTask); }
+  finally { setBusy(false); }
+}
+
+async function answerTask(text, spoken) {
+  if (!task?.text || task.finished) return;
+  if (needSession()) return;
+  setBusy(true);
+  const wait = bubble("practiceChat", "soma thinking", t("thinking"));
+  try {
+    const data = await api("/api/task/answer", { language: lang, unit: task.unit, scenario: task.scenario, task: task.text, answer: text,
+                                                  tries: task.tries, history: task.history, spoken });
+    wait.remove();
+    bubble("practiceChat", "soma", data.reply, data.passed ? { colour: "green", flag: t("wellDone") }
+                                             : data.finished ? { colour: "yellow" } : { colour: "yellow", flag: t("notYet") });
+    task.history.push({ role: "learner", text }, { role: "soma", text: data.reply });
+    if (data.finished) {
+      task.finished = true;
+      if (session) { session.tasks += 1; if (data.passed) session.passed += 1; }
+      if (!isStaff()) showLevel(data.level);
+      if (data.change === "up") bubble("practiceChat", "soma", t("levelUp"), { colour: "green" });
+      if (data.change === "down") bubble("practiceChat", "soma", t("levelDown"));
+      if (session || isStaff()) showNext(t("nextTask"), newTask);
+    } else task.tries += 1;
+  } catch (error) { wait.remove(); bubble("practiceChat", "soma", error.message, { colour: "yellow" }); }
+  finally { setBusy(false); }
+}
+
+// ---------- Guided skill: disagreeing politely ----------
+function startGuided() {
+  mode = "guided"; $("practiceChat").innerHTML = ""; hideNext();
+  const first = [...Array(STEP_COUNT).keys()].find((i) => !guided.done.has(i));
+  updateSessionButton();
+  openStep(first === undefined ? 0 : first);
+}
+
+function showGuidedHeader() {
+  practiceHeader(t("skill"), t("steps")[guided.step][1]);
+  $("practiceTitle").textContent = `${t("step")} ${guided.step + 1} ${t("of")} ${STEP_COUNT}: ${t("steps")[guided.step][0]}`;
+  const bar = $("guidedProgress"); bar.innerHTML = ""; bar.classList.remove("hidden");
+  for (let i = 0; i < STEP_COUNT; i++) {
+    const dot = document.createElement("button");
+    dot.className = "dot" + (guided.done.has(i) ? " done" : "") + (i === guided.step ? " now" : "");
+    dot.onclick = () => openStep(i); bar.appendChild(dot);
+  }
+}
+
+function openStep(i) {
+  guided.step = i; guided.history = []; $("practiceChat").innerHTML = ""; hideNext(); showGuidedHeader();
+  if (session || isStaff()) guidedTurn("");
+  else bubble("practiceChat", "soma", t("sessionNeeded"), { colour: "yellow" });
+}
+
+async function guidedTurn(message, spoken = null) {
+  if (message && needSession()) return;
+  setBusy(true);
+  const wait = bubble("practiceChat", "soma thinking", t("thinking"));
+  try {
+    const data = await api("/api/practice", { step: guided.step, message, history: guided.history, language: lang, spoken });
+    wait.remove();
+    const extra = message ? (data.passed ? { colour: "green", flag: t("wellDone") } : { colour: "yellow", flag: t("notYet") }) : {};
+    bubble("practiceChat", "soma", data.reply, extra);
+    if (message) guided.history.push({ role: "learner", text: message });
+    guided.history.push({ role: "soma", text: data.reply });
+    if (data.passed) {
+      guided.done.add(guided.step); showGuidedHeader();
+      if (session) { session.tasks += 1; session.passed += 1; }
+      if (guided.step < STEP_COUNT - 1) showNext(`${t("step")} ${guided.step + 2}`, () => openStep(guided.step + 1));
+      else bubble("practiceChat", "soma", t("allDone"), { colour: "green" });
+    }
+  } catch (error) { wait.remove(); bubble("practiceChat", "soma", error.message, { colour: "yellow" }); }
+  finally { setBusy(false); }
+}
+
+// ---------- Ask SOMA ----------
+async function askTurn(question) {
+  setBusy(true);
+  const wait = bubble("askChat", "soma thinking", t("thinking"));
+  try { const data = await api("/api/ask", { question, language: lang }); wait.remove(); bubble("askChat", "soma", data.answer, { sources: data.sources }); }
+  catch (error) { wait.remove(); bubble("askChat", "soma", error.message, { colour: "yellow" }); }
+  finally { setBusy(false); }
+}
+
+// ---------- Sending answers (typed or spoken) ----------
+function route(text, spoken) {
+  if (view === "ask") return askTurn(text);
+  if (mode === "placement" && placement?.task) return placementAnswer(text, spoken);
+  if (mode === "guided") return guidedTurn(text, spoken);
+  if (mode === "unit") return answerTask(text, spoken);
+}
+
+$("bar").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const text = $("input").value.trim();
+  if (!text || busy) return;
+  $("input").value = "";
+  bubble(view === "ask" ? "askChat" : "practiceChat", "me", text);
+  route(text, null);
+});
+
+// ---------- Voice: 16 kHz WAV recorded in the browser; SOMA writes down what was said ----------
+const rec = { stream: null, ctx: null, node: null, chunks: [], rate: 0, started: 0, timer: null };
+const MAX_SECONDS = 60;
+
+async function startRecording() {
+  const chatId = view === "ask" ? "askChat" : "practiceChat";
+  try { rec.stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } }); }
+  catch { bubble(chatId, "soma", t("micError"), { colour: "yellow" }); return; }
+  rec.ctx = new (window.AudioContext || window.webkitAudioContext)(); rec.rate = rec.ctx.sampleRate; rec.chunks = [];
+  const source = rec.ctx.createMediaStreamSource(rec.stream);
+  rec.node = rec.ctx.createScriptProcessor(4096, 1, 1);
+  rec.node.onaudioprocess = (e) => rec.chunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+  source.connect(rec.node); rec.node.connect(rec.ctx.destination);
+  rec.started = Date.now(); $("mic").classList.add("recording"); $("send").disabled = true;
+  rec.timer = setInterval(() => {
+    const s = Math.floor((Date.now() - rec.started) / 1000);
+    $("micTime").textContent = `0:${String(s).padStart(2, "0")}`;
+    if (s >= MAX_SECONDS) stopRecording();
+  }, 250);
+}
+
+function toWavBase64(chunks, inRate) {
+  const total = chunks.reduce((n, c) => n + c.length, 0);
+  const all = new Float32Array(total); let offset = 0;
+  chunks.forEach((c) => { all.set(c, offset); offset += c.length; });
+  const ratio = inRate / 16000, length = Math.floor(total / ratio);
+  const buffer = new ArrayBuffer(44 + length * 2), v = new DataView(buffer);
+  const write = (o, s) => [...s].forEach((ch, i) => v.setUint8(o + i, ch.charCodeAt(0)));
+  write(0, "RIFF"); v.setUint32(4, 36 + length * 2, true); write(8, "WAVE"); write(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 16000, true);
+  v.setUint32(28, 32000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); write(36, "data"); v.setUint32(40, length * 2, true);
+  for (let i = 0; i < length; i++) {
+    let sum = 0, count = 0;
+    for (let j = Math.floor(i * ratio); j < Math.floor((i + 1) * ratio) && j < total; j++) { sum += all[j]; count++; }
+    const x = Math.max(-1, Math.min(1, count ? sum / count : 0));
+    v.setInt16(44 + i * 2, x < 0 ? x * 0x8000 : x * 0x7fff, true);
+  }
+  const bytes = new Uint8Array(buffer); let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(binary);
+}
+
+function fluencyNote(f) {
+  const box = document.createElement("div"); box.className = "measures";
+  const add = (check, text) => { const s = document.createElement("span"); s.className = f.checks[check]; s.textContent = text; box.appendChild(s); };
+  add("speed", `${t("speedLabel")}: ${f.wpm} ${t("wpm")} (${t("goodRange")} ${f.target_wpm[0]}–${f.target_wpm[1]})`);
+  add("pauses", `${t("pausesLabel")}: ${f.pauses}${f.long_pauses ? ` (${f.long_pauses} > 2 s)` : ""}`);
+  add("fillers", `${t("fillersLabel")}: ${f.fillers}`);
+  add("phrases", `${t("phrasesLabel")}: ${f.phrases.join(", ") || t("noneWord")}`);
+  const time = document.createElement("span"); time.className = "spoken"; time.style.width = "100%";
+  time.textContent = `${t("spoken")} · ${Math.round(f.seconds)} s`; box.prepend(time);
+  return box;
+}
+
+async function stopRecording(discard) {
+  clearInterval(rec.timer);
+  const seconds = (Date.now() - rec.started) / 1000;
+  rec.node.disconnect(); rec.stream.getTracks().forEach((track) => track.stop()); rec.ctx.close();
+  $("mic").classList.remove("recording"); $("micTime").textContent = ""; $("send").disabled = false;
+  if (discard || seconds < 0.8) return;
+  const chatId = view === "ask" ? "askChat" : "practiceChat";
+  setBusy(true);
+  const wait = bubble(chatId, "me thinking", "…");
+  try {
+    const context = view === "ask" ? "" : (placement?.task || (mode === "unit" ? task?.text : guided.history.at(-1)?.text) || "");
+    const { text, fluency } = await api("/api/transcribe", { audio: toWavBase64(rec.chunks, rec.rate), language: lang, context });
+    wait.remove(); setBusy(false);
+    if (!text || !fluency) { bubble(chatId, "soma", t("heardNothing"), { colour: "yellow" }); return; }
+    const mine = bubble(chatId, "me", text);
+    mine.appendChild(fluencyNote(fluency));
+    const spoken = { ...fluency, seconds: Math.min(Math.max(fluency.seconds, 0.1), 120), wpm: Math.min(fluency.wpm, 400) };
+    delete spoken.checks;
+    route(text, spoken);
+  } catch (error) { wait.remove(); setBusy(false); bubble(chatId, "soma", error.message, { colour: "yellow" }); }
+}
+$("mic").addEventListener("click", () => {
+  if (busy) return;
+  if ($("mic").classList.contains("recording")) stopRecording(); else startRecording();
+});
+
+// ---------- Progress dashboards (learner and teacher) ----------
+function levelChart(days) {
+  const points = days.filter((d) => d.difficulty);
+  const W = 600, H = 230, left = 70, right = 14, top = 14, bottom = 36;
+  const x = (i) => left + (points.length < 2 ? (W - left - right) / 2 : i * (W - left - right) / (points.length - 1));
+  const y = (d) => top + (9 - d) * (H - top - bottom) / 8;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${t("levelOverTime")}">`;
+  [3.5, 6.5].forEach((b) => { svg += `<line x1="${left}" x2="${W - right}" y1="${y(b)}" y2="${y(b)}" stroke="#bbb" stroke-dasharray="4 4"/>`; });
+  [[2, 1], [5, 2], [8, 3]].forEach(([d, level]) => { svg += `<text x="4" y="${y(d) + 7}" font-size="20" fill="#666">${t("level").slice(0, 3)}. ${level}</text>`; });
+  if (points.length) {
+    svg += `<polyline fill="none" stroke="#111" stroke-width="4" points="${points.map((p, i) => `${x(i)},${y(p.difficulty)}`).join(" ")}"/>`;
+    points.forEach((p, i) => { svg += `<circle cx="${x(i)}" cy="${y(p.difficulty)}" r="6" fill="#111"/>`; });
+    const label = (p) => p.day.slice(8, 10) + "/" + p.day.slice(5, 7);
+    svg += `<text x="${x(0)}" y="${H - 8}" font-size="20" fill="#666" text-anchor="${points.length < 2 ? "middle" : "start"}">${label(points[0])}</text>`;
+    if (points.length > 1) svg += `<text x="${x(points.length - 1)}" y="${H - 8}" font-size="20" fill="#666" text-anchor="end">${label(points.at(-1))}</text>`;
+  }
+  return svg + "</svg>";
+}
+
+function renderProgress(el, data, teacher) {
+  el.innerHTML = "";
+  if (!data.level) {
+    const p = document.createElement("p"); p.className = "muted"; p.textContent = teacher ? t("notPlaced") : t("noProgress");
+    el.appendChild(p); return;
+  }
+  const top = document.createElement("div"); top.className = "card";
+  top.innerHTML = `<div class="row end" style="align-items:flex-start"><div style="flex:1;min-width:150px"><div class="muted">${t("nowAt")}</div><div class="big now"></div></div>
+                   <div style="flex:1;min-width:130px"><div class="muted">${t("startedAt")}</div><div class="start"></div></div></div>
+                   <div class="bar3"><span></span><span></span><span></span></div><div class="muted step"></div>`;
+  top.querySelector(".now").textContent = levelText(data.level);
+  top.querySelector(".start").textContent = data.start_level ? levelText(data.start_level) : "–";
+  top.querySelectorAll(".bar3 span").forEach((span, i) => span.classList.toggle("on", i < data.step_in_level));
+  top.querySelector(".step").textContent = data.difficulty >= 9 ? t("topLevel") : fill(t("stepInLevel"), { s: data.step_in_level, l: data.level });
+  const stats = document.createElement("div"); stats.className = "card stats";
+  [[t("daysPractised"), data.totals.days_practised], [t("minutesTotal"), data.totals.minutes],
+   [t("tasksPassed"), `${data.totals.passed} / ${data.totals.tasks}`],
+   [data.target_wpm ? `${t("speed")} (${t("goodRange")} ${data.target_wpm[0]}–${data.target_wpm[1]})` : t("speed"), data.totals.avg_wpm ?? "–"],
+   [t("pausesPerMin"), data.totals.avg_pauses ?? "–"], [t("fillersPer100"), data.totals.avg_fillers ?? "–"]].forEach(([label, value]) => {
+    const box = document.createElement("div"); box.className = "stat"; box.innerHTML = "<b></b><span class='muted'></span>";
+    box.querySelector("b").textContent = value; box.querySelector("span").textContent = label; stats.appendChild(box);
+  });
+  const chart = document.createElement("div"); chart.className = "card chart";
+  chart.innerHTML = `<h3>${t("levelOverTime")}</h3>` + levelChart(data.days);
+  el.append(top, stats, chart);
+  const guided = document.createElement("p"); guided.className = "muted"; guided.textContent = fill(t("guidedDone"), { n: data.guided_done ?? 0 });
+  el.appendChild(guided);
+  if (teacher && data.days.length) {
+    const table = document.createElement("div"); table.className = "card scroll";
+    table.innerHTML = `<table><thead><tr><th>${t("colDay")}</th><th>${t("colLevel")}</th><th>${t("minutesTotal")}</th><th>${t("tasksPassed")}</th><th>${t("speed")}</th><th>${t("pausesPerMin")}</th><th>${t("fillersPer100")}</th></tr></thead><tbody></tbody></table>`;
+    [...data.days].reverse().forEach((d) => {
+      const tr = document.createElement("tr");
+      [d.day.slice(8, 10) + "/" + d.day.slice(5, 7), d.level ?? "–", d.minutes, `${d.passed} / ${d.tasks}`, d.avg_wpm ?? "–",
+       d.avg_pauses ?? "–", d.avg_fillers ?? "–"].forEach((v) => cell(tr, v));
+      table.querySelector("tbody").appendChild(tr);
+    });
+    el.appendChild(table);
+  }
+}
+
+async function loadMyProgress() {
+  const box = $("myProgress"); box.innerHTML = `<p class="thinking">…</p>`;
+  try { renderProgress(box, await api(`/api/progress/me?language=${lang}`), false); }
+  catch (error) { box.textContent = error.message; }
+}
+
+async function showLearner(detail, learner, language) {
+  detail.innerHTML = "";
+  const head = document.createElement("div"); head.className = "row end";
+  const title = document.createElement("h3"); title.textContent = learner.name;
+  const langs = document.createElement("div"); langs.className = "row";
+  const options = Object.keys(learner.levels).length ? Object.keys(learner.levels) : ["rw", "en", "sw", "fr"];
+  options.forEach((code) => {
+    const b = document.createElement("button"); b.className = "btn small" + (code === language ? "" : " outline");
+    b.textContent = t("langNames")[code]; b.onclick = () => showLearner(detail, learner, code); langs.appendChild(b);
+  });
+  const close = document.createElement("button"); close.className = "btn outline small"; close.textContent = t("close");
+  close.onclick = () => { detail.innerHTML = ""; }; langs.appendChild(close);
+  head.append(title, langs);
+  const body = document.createElement("div"); body.innerHTML = `<p class="thinking">…</p>`;
+  detail.append(head, body);
+  try { renderProgress(body, await api(`/api/teacher/learners/${learner.user_id}?language=${language}`), true); }
+  catch (error) { body.textContent = error.message; }
+  detail.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// ---------- Teacher and admin ----------
+function fmtDate(iso) {
+  if (!iso) return "–";
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+function cell(tr, text, bold) { const td = document.createElement("td"); td.textContent = text; if (bold) td.style.fontWeight = "700"; tr.appendChild(td); return td; }
+
+async function loadClasses() {
+  const list = $("classList"); list.innerHTML = `<p class="thinking">…</p>`;
+  let data;
+  try { data = await api("/api/teacher/classes"); } catch (error) { list.innerHTML = ""; list.textContent = error.message; return; }
+  list.innerHTML = "";
+  if (!data.classes.length) { const p = document.createElement("p"); p.className = "muted"; p.textContent = t("noClasses"); list.appendChild(p); }
+  data.classes.forEach((room) => list.appendChild(classCard(room)));
+}
+
+function classCard(room) {
+  const card = document.createElement("div"); card.className = "card";
+  const link = `${location.origin}/?join=${room.code}`;
+  card.innerHTML = `
+    <div class="row end"><h3></h3><span class="muted count"></span></div>
+    <div class="row end" style="margin:8px 0">
+      <div><div class="muted">${t("code")}</div><div class="code"></div></div>
+      <div class="stack" style="gap:6px"><span class="muted">${t("joinLink")}</span><button class="btn outline small copy">${t("copy")}</button></div>
+    </div>
+    <form class="row minutesForm" style="margin-bottom:10px">
+      <label style="font-weight:400;flex:1;min-width:150px"><span class="muted">${t("minutes")}</span><input type="number" min="1" max="120" required class="minutes"></label>
+      <button class="btn outline small">${t("save")}</button>
+    </form>
+    <div class="scroll"><table><thead><tr>
+      <th>${t("colName")}</th><th>${t("colLevel")}</th><th>${t("colTime")}</th><th>${t("colTasks")}</th><th>${t("colWpm")}</th><th>${t("colLast")}</th>
+    </tr></thead><tbody></tbody></table></div>
+    <details style="margin-top:10px"><summary>${t("addStudent")}</summary>
+      <form class="stack studentForm" style="margin-top:8px">
+        <input class="sName" required maxlength="40" placeholder="${t("yourName")}">
+        <input class="sUser" required minlength="3" maxlength="40" pattern="[A-Za-z0-9_.\\-]+" placeholder="${t("username")}">
+        <input class="sPass" type="password" required minlength="8" placeholder="${t("password")}" autocomplete="new-password">
+        <button class="btn">${t("create")}</button><div class="msg2 hidden"></div>
+      </form></details>
+    <div class="detail"></div>`;
+  card.querySelector("h3").textContent = room.name;
+  card.querySelector(".count").textContent = `${room.learners.length} ${t("learnersWord")}`;
+  card.querySelector(".code").textContent = room.code;
+  card.querySelector(".minutes").value = room.session_minutes;
+  card.querySelector(".copy").onclick = async (e) => { try { await navigator.clipboard.writeText(link); e.target.textContent = t("copied"); } catch { prompt(t("joinLink"), link); } };
+  card.querySelector(".minutesForm").onsubmit = async (e) => {
+    e.preventDefault();
+    await api(`/api/teacher/classes/${room.id}/minutes`, { minutes: Number(card.querySelector(".minutes").value) });
+    e.submitter.textContent = "✓";
+  };
+  const body = card.querySelector("tbody");
+  if (!room.learners.length) { const tr = document.createElement("tr"); const td = cell(tr, t("noLearners")); td.colSpan = 6; body.appendChild(tr); }
+  room.learners.forEach((l) => {
+    const tr = document.createElement("tr");
+    const nameCell = cell(tr, "");
+    const nameBtn = document.createElement("button"); nameBtn.className = "namebtn"; nameBtn.textContent = l.name;
+    nameBtn.onclick = () => showLearner(card.querySelector(".detail"), l, Object.keys(l.levels)[0] || lang);
+    nameCell.appendChild(nameBtn);
+    if (l.needs_help) { const b = document.createElement("span"); b.className = "badge"; b.textContent = t("needsHelp"); nameCell.appendChild(b); }
+    cell(tr, Object.entries(l.levels).map(([code, level]) => `${code} ${l.start_levels?.[code] ?? "?"} → ${level}`).join(" · ") || "–");
+    cell(tr, `${l.minutes} ${t("min")}`);
+    cell(tr, `${l.passed} / ${l.tasks}`);
+    cell(tr, l.avg_wpm ?? "–");
+    cell(tr, fmtDate(l.last_active));
+    body.appendChild(tr);
+  });
+  card.querySelector(".studentForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const msg = card.querySelector(".msg2");
+    try {
+      await api(`/api/teacher/classes/${room.id}/students`, { name: card.querySelector(".sName").value.trim(),
+        username: card.querySelector(".sUser").value.trim(), password: card.querySelector(".sPass").value });
+      msg.className = "msg2 note"; msg.textContent = t("created"); e.target.reset(); setTimeout(loadClasses, 800);
+    } catch (error) { msg.className = "msg2 error"; msg.textContent = error.message; }
+  };
+  return card;
+}
+
+$("classForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await api("/api/teacher/classes", { name: $("className").value.trim(), minutes: Number($("classMinutes").value) });
+  $("className").value = ""; loadClasses();
+});
+$("refresh").onclick = async () => { $("refresh").disabled = true; try { await api("/api/teacher/refresh", {}); } catch {} $("refresh").disabled = false; loadClasses(); };
+$("teacherForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const msg = $("teacherMsg");
+  try {
+    await api("/api/admin/teachers", { name: $("tName").value.trim(), username: $("tUsername").value.trim(), password: $("tPassword").value });
+    msg.className = "note"; msg.textContent = t("created"); event.target.reset();
+  } catch (error) { msg.className = "error"; msg.textContent = error.message; }
+});
+
+// ---------- Start ----------
+applyLanguage();
+const joinCode = new URLSearchParams(location.search).get("join");
+if (user) startApp(); else if (joinCode) showJoin(joinCode);
+
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+setTimeout(() => { $("splash").classList.add("gone"); setTimeout(() => $("splash").remove(), 600); }, reduced ? 600 : 2600);
+</script>
+</body>
+</html>

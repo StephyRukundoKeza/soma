@@ -145,3 +145,28 @@ def test_pages_looked_at_are_recorded_even_when_refusing(monkeypatch):
     result = rag.answer("What does it mean to listen well?")
     assert not result["grounded"] and result["sources"] == []
     assert result["retrieved"] == ["GSCS S4, p. 12"]
+
+
+def test_language_of_a_reply_is_recognised():
+    assert rag.detect_language("Mzee Kobe yalamikaye na kumsihi Mungu kulaza roho yake mahali pema (Kiswahili S4, PDF p. 224).") == "sw"
+    assert rag.detect_language("Gutega amatwi ni ubushobozi bwo kumva neza kandi ntabwo ari ukumva gusa (GSCS S4, p. 12).") == "rw"
+    assert rag.detect_language("Active listening is the ability to listen and not just hear.") == "en"
+    assert rag.detect_language("Ok") is None
+
+
+def test_a_reply_in_the_wrong_language_is_rewritten(monkeypatch):
+    sent = {}
+    monkeypatch.setattr(rag, "call_model", lambda prompt, system="", names=(): sent.setdefault("prompt", prompt) and "Igisubizo mu Kinyarwanda (Kiswahili S4, PDF p. 224)")
+    text = "Mzee Kobe alimuomba Mungu kwa sababu yake na hapa (Kiswahili S4, PDF p. 224)."
+    assert rag.ensure_language(text, "rw").startswith("Igisubizo")
+    assert "Rewrite this text in Kinyarwanda (Ikinyarwanda)" in sent["prompt"]
+
+
+def test_a_reply_in_the_right_language_is_kept(monkeypatch):
+    monkeypatch.setattr(rag, "call_model", lambda *a, **k: "should not be called")
+    text = "Gutega amatwi ni ubushobozi bwo kumva neza kandi ntabwo ari ukumva gusa."
+    assert rag.ensure_language(text, "rw") == text
+
+
+def test_rules_refuse_passages_that_only_share_a_word():
+    assert "only shares a word" in rag.SYSTEM_RULES and "Kinyarwanda (Ikinyarwanda) and Kiswahili are different" in rag.SYSTEM_RULES

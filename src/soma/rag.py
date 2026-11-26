@@ -47,10 +47,14 @@ Rules:
 - The passages may be in another language than the question, or use other words for the
   same idea (for example "speaking politely" and "courteous communication"). If a passage
   explains the idea asked about, answer from it, explained in the learner's language.
-- If the passages do not contain the answer, reply with exactly: {NOT_IN_BOOK_TOKEN}
+- Answer only if a passage really answers this exact question. A passage that only shares a word
+  or a topic with the question is not enough. If no passage answers it, reply with exactly: {NOT_IN_BOOK_TOKEN}
+- Questions about beliefs, religion or politics are answered only if a passage answers them; otherwise {NOT_IN_BOOK_TOKEN}.
 - After each fact, cite its source in brackets, copying the label exactly as given,
   e.g. (GSCS S4, p. 48) or (English S4, PDF p. 9).
-- Answer in the language requested, in simple, clear sentences suitable for the learner's age.
+- Write the WHOLE answer in the language requested, even when the passages are in another language:
+  translate what you use. Kinyarwanda (Ikinyarwanda) and Kiswahili are different languages.
+- Use simple, clear sentences suitable for the learner's age.
 - Keep the answer short: at most about 120 words. Do not start with a greeting.
 - Never ask for or repeat personal information."""
 
@@ -110,6 +114,64 @@ def _gemini(prompt, system):
 def call_model(prompt, system="", names=()):
     """The only door to the language model."""
     return _gemini(remove_personal_info(prompt, names), system)
+
+
+def transcribe(audio, language="en", mime_type="audio/wav", context=""):
+    """Write down what a learner said, exactly as said (hesitations kept, mistakes not corrected).
+
+    The recording is sent to the model once and never stored. The transcript then goes
+    through call_model like any typed answer, so personal details are removed there.
+    """
+    from google.genai import types
+
+    name = LANGUAGE_NAMES.get(language, "English")
+    prompt = (f"Transcribe this recording of a learner speaking {name}. Write exactly what was said, "
+              f"in {name}, including hesitations (eh, umm) and repeated words. Do not correct mistakes, "
+              "do not translate and do not add anything. If nothing is said, reply with nothing.")
+    if context:
+        prompt += (f"\nThe learner was answering this task, which may help you recognise the words: {context[:600]}\n"
+                   "Use it only to recognise words; never add words that were not said.")
+    return _gemini([prompt, types.Part.from_bytes(data=audio, mime_type=mime_type)], "")
+
+
+# --- Answering in the learner's language ---
+
+NATIVE_NAMES = {"en": "English", "rw": "Ikinyarwanda", "sw": "Kiswahili", "fr": "français"}
+
+# Common little words that appear in almost every sentence of one language and rarely in the others
+LANGUAGE_WORDS = {
+    "rw": {"kandi", "cyangwa", "ariko", "kugira", "ngo", "ibi", "ibyo", "icyo", "iki", "uko", "nta", "ntabwo", "kuko",
+           "nuko", "bityo", "cyane", "uyu", "abo", "uwo", "ari", "kuri", "kubera", "rero", "ndetse", "maze", "nyuma",
+           "mbere", "buri", "byose", "bose", "hari", "umuntu", "abantu", "ubwo", "aho", "bikaba", "ese", "nk", "iyi"},
+    "sw": {"kwa", "katika", "hiyo", "huu", "hii", "hilo", "sana", "kama", "lakini", "pia", "yake", "zake", "wake",
+           "wao", "yeye", "kuwa", "kwamba", "hivyo", "ili", "au", "mtu", "watu", "kila", "bado", "sasa", "zaidi",
+           "hakuna", "ambayo", "ambao", "ambaye", "hapa", "tena", "mahali", "mungu", "mzee", "huyo", "vya", "cha"},
+    "en": {"the", "and", "is", "are", "of", "to", "that", "it", "with", "for", "this", "you", "not", "they", "be"},
+    "fr": {"le", "la", "les", "et", "est", "des", "une", "un", "que", "qui", "dans", "pour", "pas", "ce", "il",
+           "elle", "vous", "avec", "sur", "au", "du"},
+}
+
+
+def detect_language(text):
+    """Best guess of the text's language from its little words, or None when unsure."""
+    words = re.findall(r"[a-zà-ÿ]+", re.sub(r"\([^)]*\)", " ", text.lower()))   # citations do not count
+    scores = {lang: sum(1 for w in words if w in vocab) for lang, vocab in LANGUAGE_WORDS.items()}
+    best, second = sorted(scores.values(), reverse=True)[:2]
+    if best < 2 or best < 1.5 * second:
+        return None
+    return max(scores, key=scores.get)
+
+
+def ensure_language(text, language, names=()):
+    """If a reply came back in another language, rewrite it in the learner's language."""
+    found = detect_language(text)
+    if found is None or found == language:
+        return text
+    prompt = (f"Rewrite this text in {LANGUAGE_NAMES.get(language, 'English')} ({NATIVE_NAMES.get(language)}). "
+              "Keep the meaning. Keep everything in brackets, such as page citations, exactly as it is. "
+              f"Reply with the rewritten text only.\n\n{text}")
+    rewritten = call_model(prompt, names=names).strip()
+    return rewritten or text
 
 
 # --- Retrieval ---
@@ -186,8 +248,10 @@ def answer(question, language="en", names=()):
     context = "\n\n".join(f"[{citation(p)}]\n{p['text']}" for p in passages)
     prompt = (f"Passages:\n{context}\n\n"
               f"Learner's question: {question}\n"
-              f"Answer in {LANGUAGE_NAMES.get(language, 'English')}.")
+              f"Answer in {LANGUAGE_NAMES.get(language, 'English')} ({NATIVE_NAMES.get(language, 'English')}) only.")
     reply = call_model(prompt, SYSTEM_RULES, names)
+    if reply and NOT_IN_BOOK_TOKEN not in reply:
+        reply = ensure_language(reply, language, names)
 
     if not reply or NOT_IN_BOOK_TOKEN in reply:
         result["answer"] = NOT_IN_BOOK[language]

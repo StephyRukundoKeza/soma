@@ -10,6 +10,10 @@ Built for the Digital Umuganda & IndabaX Cameroon AI for Education fellowship. S
 3. **Index** (`index.py`): hybrid search, by meaning (`multilingual-e5-base`) and by rare keywords.
 4. **Answer** (`rag.py`): Gemini answers only from the retrieved passages and cites the page, or replies "This is not in your book."
 
+5. **Speak** (`speech.py`): spoken answers are written down by [Digital Umuganda's Kinyarwanda Whisper model](https://huggingface.co/DigitalUmuganda/whisper_small_kinyarwanda) for Kinyarwanda, and by Gemini for English, Kiswahili and French. Recordings are never stored.
+6. **Measure** (`fluency.py`): SOMA counts speed against each language's own comfortable range, pauses and long pauses (from the recording), fillers, repeated words and the polite phrases taught for that language.
+7. **Adapt** (`practice.py`): tasks are created for each learner (debate, interview, presentation). Level 1 is guided, Level 2 gives partial help, Level 3 is free speaking; two greens in a row move up, two yellows give more help.
+
 Non-English questions are translated before searching. Teacher's guides are hidden from students. Names, phone numbers and emails are removed before any text reaches a model.
 
 ## Quick start
@@ -45,4 +49,6 @@ python -m pytest -q
 
 ## Licence
 © 2026 Stephy Rukundo Keza. All rights reserved.
-REB textbooks belong to the Government of Rwanda and are not included. Uses *Communication in Practice* by Jeremy Rose (University of Minnesota Libraries Publishing, 2025), CC BY 4.0.
+REB textbooks belong to the Government of Rwanda and are not included.
+Kinyarwanda speech recognition uses [whisper_small_kinyarwanda](https://huggingface.co/DigitalUmuganda/whisper_small_kinyarwanda) by **Digital Umuganda**, a fine-tuned version of OpenAI's Whisper. Its model page does not state a licence, so I will confirm permission with Digital Umuganda before any school pilot.
+Uses *Communication in Practice* by Jeremy Rose (University of Minnesota Libraries Publishing, 2025), CC BY 4.0.
