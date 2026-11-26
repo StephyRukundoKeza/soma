@@ -12,6 +12,8 @@ CHUNKS = [
     {"id": "teacher-en", "audience": "teacher", "source_type": "reb", "language": "en", "text": "b"},
     {"id": "student-rw", "audience": "student", "source_type": "reb", "language": "rw", "text": "c"},
     {"id": "extra-en", "audience": "student", "source_type": "extra", "language": "en", "text": "d"},
+    {"id": "bees-rw", "audience": "student", "source_type": "reb", "language": "rw",
+     "text": "Abavumvu bagira amavumvu ni ukuvuga amagambo babwira inzuki"},
 ]
 
 
@@ -44,3 +46,14 @@ def test_results_are_sorted_best_first(monkeypatch):
     results = index.search("question", k=3)
     assert results[0]["id"] == "student-rw"
     assert [r["score"] for r in results] == sorted([r["score"] for r in results], reverse=True)
+
+
+def test_keyword_search_finds_rare_words(monkeypatch):
+    fake_index(monkeypatch, best_id="student-en")
+    results = index.keyword_search("Amavumvu ni iki?", k=3)
+    assert [r["id"] for r in results] == ["bees-rw"] and "score" in results[0]
+
+
+def test_keyword_search_ignores_short_words(monkeypatch):
+    fake_index(monkeypatch, best_id="student-en")
+    assert index.keyword_search("ni iki?") == []

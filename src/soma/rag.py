@@ -4,18 +4,21 @@ from functools import lru_cache
 
 from dotenv import load_dotenv
 
-from index import search
+from index import keyword_search, search
 
 load_dotenv()
 
 # Models are tried in this order; if one is busy or too slow, the next one is used
 GEMINI_MODELS = [m.strip() for m in os.environ.get(
     "GEMINI_MODELS", "gemini-3.8-flash,gemini-3.7-flash,gemini-3.5-flash-lite").split(",") if m.strip()]
-GEMINI_TIMEOUT_MS = int(os.environ.get("GEMINI_TIMEOUT_MS", "25000"))
+GEMINI_TIMEOUT_MS = int(os.environ.get("GEMINI_TIMEOUT_MS", "15000"))
 last_model_used = None
 
 # Retrieval settings
 TOP_K = 5
+KEYWORD_K = 8           # keyword candidates scored by meaning
+KEYWORD_ALWAYS = 3      # the best keyword matches are always passed on, even with a lower score
+MAX_PASSAGES = 7
 MIN_SCORE = 0.78        # below this, nothing in the books is close enough
 REB_GOOD_SCORE = 0.82   # below this, also look in the extra (non-REB) source
 
@@ -41,10 +44,14 @@ SOURCE_LABELS = {
 SYSTEM_RULES = f"""You are SOMA, a tutor for Senior 4 learners in Rwanda (about 15-17 years old).
 Rules:
 - Use ONLY the passages provided. Do not use outside knowledge.
+- The passages may be in another language than the question, or use other words for the
+  same idea (for example "speaking politely" and "courteous communication"). If a passage
+  explains the idea asked about, answer from it, explained in the learner's language.
 - If the passages do not contain the answer, reply with exactly: {NOT_IN_BOOK_TOKEN}
-- After each fact, cite its source in brackets exactly as labelled, e.g. (GSCS S4, p. 48).
+- After each fact, cite its source in brackets, copying the label exactly as given,
+  e.g. (GSCS S4, p. 48) or (English S4, PDF p. 9).
 - Answer in the language requested, in simple, clear sentences suitable for the learner's age.
-- Keep the answer short: at most about 120 words.
+- Keep the answer short: at most about 120 words. Do not start with a greeting.
 - Never ask for or repeat personal information."""
 
 # --- Privacy: every model call goes through call_model, which removes personal data first ---
@@ -72,8 +79,12 @@ def get_client():
     from google import genai
     from google.genai import types
 
-    return genai.Client(api_key=os.environ["GEMINI_API_KEY"],
-                        http_options=types.HttpOptions(timeout=GEMINI_TIMEOUT_MS))
+    # No hidden retries: if a model is busy, SOMA moves straight to the next one
+    return genai.Client(
+        api_key=os.environ["GEMINI_API_KEY"],
+        http_options=types.HttpOptions(timeout=GEMINI_TIMEOUT_MS,
+                                       retry_options=types.HttpRetryOptions(attempts=1)),
+    )
 
 
 def _gemini(prompt, system):
@@ -120,16 +131,34 @@ def retrieve(question, language="en", names=()):
         queries.append(translated)
 
     def best_of(source_types):
-        found = {}
-        for query in queries:
-            for result in search(query, k=TOP_K, source_types=source_types):
+        found, keyword_ids = {}, []
+
+        def keep(results):
+            for result in results:
                 if result["id"] not in found or result["score"] > found[result["id"]]["score"]:
                     found[result["id"]] = result
-        return sorted(found.values(), key=lambda r: r["score"], reverse=True)[:TOP_K]
+
+        for query in queries:
+            keep(search(query, k=TOP_K, source_types=source_types))
+            keywords = keyword_search(query, k=KEYWORD_K, source_types=source_types)
+            keep(keywords)
+            keyword_ids += [r["id"] for r in keywords[:KEYWORD_ALWAYS]]
+        if language != "en":
+            # Also search the books written in the learner's language, so a Kinyarwanda
+            # question about a Kinyarwanda topic is not matched to similar-looking Kiswahili pages
+            keep(search(question, k=TOP_K, source_types=source_types, language=language))
+
+        ranked = sorted(found.values(), key=lambda r: r["score"], reverse=True)
+        # The best keyword matches get their places first, so the passage limit
+        # cuts the weakest meaning matches instead of a page with the exact words
+        chosen = [found[chunk_id] for chunk_id in dict.fromkeys(keyword_ids)]
+        chosen += [r for r in ranked[:TOP_K] if r["id"] not in set(keyword_ids)]
+        return chosen[:MAX_PASSAGES]
 
     results = best_of(["reb"])
     if not results or results[0]["score"] < REB_GOOD_SCORE:
-        results = sorted(results + best_of(["extra"]), key=lambda r: r["score"], reverse=True)[:TOP_K]
+        results = results + [r for r in best_of(["extra"])[:2] if r["id"] not in {c["id"] for c in results}]
+    results.sort(key=lambda r: r["score"], reverse=True)
     return results, translated
 
 
@@ -145,8 +174,10 @@ def answer(question, language="en", names=()):
     """Answer a learner's question from the books only, with page citations."""
     passages, translated = retrieve(question, language, names)
     best = passages[0]["score"] if passages else 0.0
+    # "retrieved" lists the pages SOMA looked at, even when it refuses
     result = {"question": question, "language": language, "translated": translated,
-              "best_score": best, "sources": [], "grounded": False}
+              "best_score": best, "retrieved": [citation(p) for p in passages],
+              "sources": [], "grounded": False}
 
     if best < MIN_SCORE:
         result["answer"] = NOT_IN_BOOK[language]

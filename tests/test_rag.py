@@ -3,7 +3,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src" / "soma"))
 
+import pytest  # noqa: E402
+
 import rag  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def no_keyword_search(monkeypatch):
+    """Most tests fake search(); keyword search is switched off unless a test needs it."""
+    monkeypatch.setattr(rag, "keyword_search", lambda *a, **k: [])
 
 
 def fake_chunk(score, source="gscs_s4", page=48, chunk_id="c1"):
@@ -55,7 +63,6 @@ def test_non_english_question_is_also_searched_in_english(monkeypatch):
     assert "barriers to communication" in queries
 
 
-
 class FakeModels:
     def __init__(self, busy):
         self.busy, self.tried = busy, []
@@ -84,3 +91,57 @@ def test_all_models_busy_raises_a_clear_error(monkeypatch):
         assert False, "expected ModelsBusyError"
     except rag.ModelsBusyError as error:
         assert "model-a" in str(error) and "model-b" in str(error)
+
+
+def test_non_english_question_also_searches_books_in_that_language(monkeypatch):
+    languages = []
+    monkeypatch.setattr(rag, "search", lambda q, **k: languages.append(k.get("language")) or [fake_chunk(0.90)])
+    monkeypatch.setattr(rag, "_gemini", lambda prompt, system: "translated question"
+                        if "Translate" in prompt else "Answer (Ikinyarwanda S4, p. 9)")
+    rag.answer("Amavumvu ni iki?", language="rw")
+    assert "rw" in languages
+
+
+def test_english_question_does_not_add_a_language_filter(monkeypatch):
+    languages = []
+    monkeypatch.setattr(rag, "search", lambda q, **k: languages.append(k.get("language")) or [fake_chunk(0.90)])
+    monkeypatch.setattr(rag, "_gemini", lambda prompt, system: "Answer (GSCS S4, p. 48)")
+    rag.answer("What are the barriers?")
+    assert set(languages) == {None}
+
+
+def test_keyword_matches_are_added_to_the_results(monkeypatch):
+    monkeypatch.setattr(rag, "search", lambda *a, **k: [fake_chunk(0.85, chunk_id="meaning")])
+    monkeypatch.setattr(rag, "keyword_search",
+                        lambda *a, **k: [fake_chunk(0.83, source="kinyarwanda_s4", page=9, chunk_id="keyword")])
+    passages, _ = rag.retrieve("Amavumvu ni iki?")
+    assert {p["id"] for p in passages} == {"meaning", "keyword"}
+
+
+def test_top_keyword_match_is_kept_even_with_a_lower_score(monkeypatch):
+    strong = [fake_chunk(0.90 - i / 100, chunk_id=f"meaning{i}") for i in range(5)]
+    monkeypatch.setattr(rag, "search", lambda *a, **k: strong)
+    monkeypatch.setattr(rag, "keyword_search",
+                        lambda *a, **k: [fake_chunk(0.80, source="kinyarwanda_s4", page=9, chunk_id="bees")])
+    passages, _ = rag.retrieve("Amavumvu ni iki?")
+    assert "bees" in {p["id"] for p in passages} and len(passages) == 6
+
+
+def test_keyword_matches_are_never_cut_by_the_passage_limit(monkeypatch):
+    strong = [fake_chunk(0.90 - i / 100, source="kiswahili_s4", chunk_id=f"meaning{i}") for i in range(7)]
+    monkeypatch.setattr(rag, "translate_to_english", lambda *a, **k: "When is the proverb used?")
+    monkeypatch.setattr(rag, "search", lambda *a, **k: strong)
+    by_query = {"Umugani bawuca ryari?": ["page12", "page15"], "When is the proverb used?": ["page12", "page11"]}
+    monkeypatch.setattr(rag, "keyword_search", lambda question, **k: [
+        fake_chunk(0.80, source="kinyarwanda_s4", chunk_id=c) for c in by_query[question]])
+    passages, _ = rag.retrieve("Umugani bawuca ryari?", language="rw")
+    ids = {p["id"] for p in passages}
+    assert {"page11", "page12", "page15"} <= ids and len(passages) == rag.MAX_PASSAGES
+
+
+def test_pages_looked_at_are_recorded_even_when_refusing(monkeypatch):
+    monkeypatch.setattr(rag, "search", lambda *a, **k: [fake_chunk(0.85, page=12)])
+    monkeypatch.setattr(rag, "call_model", lambda *a, **k: rag.NOT_IN_BOOK_TOKEN)
+    result = rag.answer("What does it mean to listen well?")
+    assert not result["grounded"] and result["sources"] == []
+    assert result["retrieved"] == ["GSCS S4, p. 12"]

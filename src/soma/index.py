@@ -1,5 +1,7 @@
 import json
+import math
 import os
+import re
 import sys
 from functools import lru_cache
 from pathlib import Path
@@ -99,6 +101,50 @@ def search(question, k=5, audience="student", source_types=None, language=None, 
 
     best = np.argsort(-scores)[:k]
     return [{**chunks[i], "score": round(float(scores[i]), 3)} for i in best if allowed[i]]
+
+
+MIN_KEYWORD_LENGTH = 4   # ignores short words such as "ni", "iki", "the", "what"
+
+
+def keyword_search(question, k=5, audience="student", source_types=None, language=None, model_key=None):
+    """Find chunks that contain the question's important words, then score them by meaning.
+
+    Exact words help where the embedding model is weak, for example rare
+    Kinyarwanda words such as "amavumvu". Scores stay comparable with search().
+    """
+    model_key = model_key or DEFAULT_MODEL
+    chunks, vectors = load_index(model_key)
+    words = {w for w in re.findall(r"\w+", question.lower()) if len(w) >= MIN_KEYWORD_LENGTH}
+    if not words:
+        return []
+
+    texts = [chunk["text"].lower() for chunk in chunks]
+    # Rare words count more than common ones (inverse document frequency)
+    weight = {}
+    for w in words:
+        containing = sum(1 for text in texts if w in text)
+        if containing:
+            weight[w] = math.log(len(texts) / containing)
+
+    hits = []
+    for i, chunk in enumerate(chunks):
+        if audience is not None and chunk["audience"] != audience:
+            continue
+        if source_types is not None and chunk["source_type"] not in source_types:
+            continue
+        if language is not None and chunk["language"] != language:
+            continue
+        # A page about a topic repeats its key words, so frequency counts (dampened by log)
+        matched = sum(weight[w] * (1 + math.log(texts[i].count(w))) for w in weight if w in texts[i])
+        if matched:
+            hits.append((matched, i))
+    if not hits:
+        return []
+
+    hits.sort(reverse=True)
+    best = [i for _, i in hits[:k]]
+    scores = vectors[best] @ embed([question], model_key, "query")[0]
+    return [{**chunks[i], "score": round(float(score), 3)} for i, score in zip(best, scores)]
 
 
 def print_results(results):

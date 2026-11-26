@@ -11,7 +11,7 @@ id,language,type,question,expected_answer,source,page
 10,en,in_book,What is visual communication?,"Displaying information through topography, photography, signs, symbols, designs, television and video clips",GSCS S4,p. 44
 11,en,in_book,Why is learning to read and communicate important?,It is the most appropriate way to gain knowledge,GSCS S4,p. 46
 12,en,in_book,What are the barriers to effective communication?,"Noise, language, values, fear, lack of confidence, attitude, cultural differences, hearing problems, wrong message or feedback",GSCS S4,p. 48
-13,en,in_book,What are the main rivers of Rwanda?,"Mwogo, Rukarara, Mukungwa, Base, Ruhondo, Akagera, Nyabarongo, Akanyaru",English S4,PDF p. 6
+13,en,in_book,What are the main rivers of Rwanda?,"Mwogo, Rukarara, Mukungwa, Base, Ruhondo, Akagera, Nyabarongo, Akanyaru",English S4,PDF p. 6|PDF p. 10
 14,en,in_book,What is the highest point in Rwanda?,"Karisimbi volcano, 4,507 m",English S4,PDF p. 9
 15,en,in_book,Which is the most mountainous province of Rwanda?,"Northern Province (low temperatures, relatively high rainfall)",English S4,PDF p. 11
 16,en,in_book,"In the example about the seagull and the fish, which is the subject and which is the object?",The seagull is the subject; the fish is the object,English S4,PDF p. 13
@@ -22,7 +22,7 @@ id,language,type,question,expected_answer,source,page
 21,rw,in_book,Amavumvu ni iki?,"Amagambo abavumvu babwira inzuki, bazihamagara, bazisingiza",Ikinyarwanda S4,p. 9
 22,rw,in_book,"Umugani ""Kami ka muntu ni umutima we"" bawuca ryari?",Iyo babonye umuntu yiyemeje kwihitiramo icyo bamwe bamubuza,Ikinyarwanda S4,p. 11
 23,rw,in_book,Insigamigani ni iki?,"Ingeri y'ubuvanganzo ifatiye ku muntu wakoze ikintu cyangwa ikintu cyabaye, bigahinduka iciro ry'umugani",Ikinyarwanda S4,p. 14
-24,sw,in_book,Lugha ni nini?,Chombo kinachotumiwa kuwasiliana na kuelewana,Kiswahili S4,p. 5
+24,sw,in_book,Lugha ni nini?,Chombo kinachotumiwa kuwasiliana na kuelewana,Kiswahili S4,p. 5|p. 9|p. 16
 25,sw,in_book,Lengo kuu la lugha ni nini?,Kuwezesha watu kutoa fikra zao na kuelezeana mambo ya maisha yao,Kiswahili S4,p. 9
 26,sw,in_book,Kwa nini lugha ni muhimu katika utamaduni?,Lugha ni kipengele cha utamaduni na chombo cha utamaduni,Kiswahili S4,p. 16
 27,sw,in_book,Mjadala ni nini?,"Mazungumzo juu ya jambo fulani, katika makundi, yakiongozwa na mwenyekiti",Kiswahili S4,p. 147

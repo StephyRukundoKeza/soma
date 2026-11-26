@@ -7,7 +7,7 @@ Built for the Digital Umuganda & IndabaX Cameroon AI for Education fellowship. S
 ## How it works
 1. **Extract** (`extract.py`): reads each PDF page, with OCR for scanned pages; tables kept as Markdown.
 2. **Chunk** (`chunk.py`): splits pages into labelled pieces (book, language, unit, page, skill).
-3. **Index** (`index.py`): searches by meaning with `multilingual-e5-base`.
+3. **Index** (`index.py`): hybrid search, by meaning (`multilingual-e5-base`) and by rare keywords.
 4. **Answer** (`rag.py`): Gemini answers only from the retrieved passages and cites the page, or replies "This is not in your book."
 
 Non-English questions are translated before searching. Teacher's guides are hidden from students. Names, phone numbers and emails are removed before any text reaches a model.
@@ -36,7 +36,7 @@ python -m pytest -q
 ## Results
 - **Documents:** 14 documents, 2,860 pages, 786 tables, 3,871 chunks.
 - **Search model:** `multilingual-e5-base` found the right page first where LaBSE missed it, so I chose e5.
-- **Answers:** 6 of 6 test questions answered correctly with the right page, in English, Kinyarwanda and Kiswahili; the off-topic question was correctly refused. The Kinyarwanda answer had 2 spacing errors.
+- **Answers:** on a 30-question test set (English, Kinyarwanda, Kiswahili), the right page is found for 28 of 28 questions and cited in 27 of 28 answers, and both off-topic questions are refused; average response time 5.7 s. Adding keyword search to meaning search raised the score from 19 to 27. Kinyarwanda questions about English-only content are answered in Kinyarwanda.
 
 ## Technical notes
 - PyMuPDF is pinned to 1.28.2, because table detection in 2.x crashes on Windows.
