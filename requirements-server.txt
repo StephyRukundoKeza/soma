@@ -1,0 +1,8 @@
+sentence-transformers
+transformers
+numpy
+python-dotenv
+google-genai
+fastapi
+uvicorn
+httpx

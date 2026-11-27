@@ -37,12 +37,25 @@ BUSY = {
     "fr": "SOMA est très occupé en ce moment. Réessaie dans une minute.",
 }
 
+def warm_up_search():
+    """Load the search model and index in the background, so the first learner does not wait."""
+    try:
+        import index
+
+        index.load_index(index.DEFAULT_MODEL)
+        index.get_model(index.DEFAULT_MODEL)
+        print("[search] index and model ready")
+    except Exception as error:
+        print(f"[search] not loaded yet: {str(error)[:120]}")
+
+
 @asynccontextmanager
 async def lifespan(app):
     # The dashboard ETL also runs on a schedule while the server is up
     if ETL_EVERY_SECONDS > 0 and os.environ.get("SUPABASE_URL"):
         threading.Thread(target=etl_loop, daemon=True).start()
     threading.Thread(target=speech.warm_up, daemon=True).start()
+    threading.Thread(target=warm_up_search, daemon=True).start()
     yield
 
 

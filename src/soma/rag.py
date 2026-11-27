@@ -10,7 +10,7 @@ load_dotenv()
 
 # Models are tried in this order; if one is busy or too slow, the next one is used
 GEMINI_MODELS = [m.strip() for m in os.environ.get(
-    "GEMINI_MODELS", "gemini-3.8-flash,gemini-3.7-flash,gemini-3.5-flash-lite").split(",") if m.strip()]
+    "GEMINI_MODELS", "gemini-3.5-flash-lite,gemini-3.8-flash").split(",") if m.strip()]
 GEMINI_TIMEOUT_MS = int(os.environ.get("GEMINI_TIMEOUT_MS", "15000"))
 last_model_used = None
 

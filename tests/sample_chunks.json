@@ -1,0 +1,68 @@
+[
+ {
+  "id": "kinyarwanda_s4-p12-t0",
+  "source": "kinyarwanda_s4",
+  "page": 12,
+  "printed_page": 3,
+  "unit": "1: UMUCO NYARWANDA",
+  "audience": "student",
+  "source_type": "reb",
+  "language": "rw",
+  "text": "3 Ikinyarwanda Umwaka wa 4 UMUCO NYARWANDA Umuco ni uburyo abantu babaho."
+ },
+ {
+  "id": "kinyarwanda_s4-p13-t0",
+  "source": "kinyarwanda_s4",
+  "page": 13,
+  "printed_page": 4,
+  "unit": "1: UMUCO NYARWANDA",
+  "audience": "student",
+  "source_type": "reb",
+  "language": "rw",
+  "text": "4 Ikinyarwanda Umwaka wa 4 Imigani ni bumwe mu buvanganzo bwo muri rubanda."
+ },
+ {
+  "id": "kinyarwanda_s4-p40-t0",
+  "source": "kinyarwanda_s4",
+  "page": 40,
+  "printed_page": 31,
+  "unit": "2: IKIGANIRO MPAKA",
+  "audience": "student",
+  "source_type": "reb",
+  "language": "rw",
+  "text": "31 Ikinyarwanda Umwaka wa 4 Uko bajya impaka: ufashe ijambo asobanura uko yumva."
+ },
+ {
+  "id": "english_s4-p66-t0",
+  "source": "english_s4",
+  "page": 66,
+  "printed_page": null,
+  "unit": "1: Friendship",
+  "audience": "student",
+  "source_type": "reb",
+  "language": "en",
+  "text": "Friendship Good friends listen to each other and disagree politely."
+ },
+ {
+  "id": "english_s4-p67-t0",
+  "source": "english_s4",
+  "page": 67,
+  "printed_page": null,
+  "unit": "1: Friendship",
+  "audience": "student",
+  "source_type": "reb",
+  "language": "en",
+  "text": "Qualities of a good friend: honesty, patience and respect."
+ },
+ {
+  "id": "english_s4_tg-p5-t0",
+  "source": "english_s4_tg",
+  "page": 5,
+  "printed_page": null,
+  "unit": "1: Friendship",
+  "audience": "teacher",
+  "source_type": "reb",
+  "language": "en",
+  "text": "Teacher's guide: hidden from learners."
+ }
+]

@@ -1,4 +1,5 @@
 import base64
+import json
 import sys
 from pathlib import Path
 
@@ -15,6 +16,20 @@ TEACHER = {"id": "t1", "role": "teacher", "name": "Mrs U"}
 ADMIN = {"id": "a1", "role": "admin", "name": "Stephy"}
 AUTH = {"Authorization": "Bearer token"}
 ROOM = {"id": "c1", "teacher_id": "t1", "name": "S4 A", "code": "K7RW2Q", "session_minutes": 4}
+
+
+SAMPLE_BOOKS = json.loads((Path(__file__).parent / "sample_chunks.json").read_text(encoding="utf-8"))
+
+
+@pytest.fixture(autouse=True)
+def sample_books(monkeypatch):
+    """A tiny sample book, so these tests pass on any computer, with or without the real index."""
+    monkeypatch.setattr(app.curriculum, "load_chunks", lambda: SAMPLE_BOOKS)
+    for cached in (app.curriculum.units, app.curriculum.running_header):
+        cached.cache_clear()
+    yield
+    for cached in (app.curriculum.units, app.curriculum.running_header):
+        cached.cache_clear()
 
 
 @pytest.fixture
@@ -77,13 +92,14 @@ def test_a_wrong_class_code_gives_a_code_the_page_can_translate(monkeypatch):
 def test_the_table_of_contents_lists_the_units(as_user):
     as_user(LEARNER)
     data = client.get("/api/units?language=rw", headers=AUTH).json()
-    assert data["grade"] == "S4" and len(data["units"]) == 7 and data["units"][0]["number"] == 1
+    assert data["grade"] == "S4" and [u["title"] for u in data["units"]] == ["Umuco nyarwanda", "Ikiganiro mpaka"]
 
 
 def test_a_unit_can_be_read(as_user):
     as_user(LEARNER)
-    data = client.get("/api/units/en-5?language=en", headers=AUTH).json()
-    assert data["title"] == "Friendship" and data["pages"]
+    data = client.get("/api/units/en-1?language=en", headers=AUTH).json()
+    assert data["title"] == "Friendship" and len(data["pages"]) == 2
+    assert all("hidden from learners" not in page["text"] for page in data["pages"])   # teacher's guide stays out
 
 
 def test_placement_sets_the_starting_level(as_user, monkeypatch, events):

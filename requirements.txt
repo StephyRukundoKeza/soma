@@ -9,3 +9,4 @@ pymupdf==1.28.2
 fastapi
 uvicorn
 httpx
+modal

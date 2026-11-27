@@ -28,10 +28,13 @@ def main():
     if password != getpass.getpass("Type it again: "):
         sys.exit("The two passwords are different.")
 
+    messages = {"short_password": "Not created: the password needs at least 8 characters.",
+                "username_taken": "Not created: this username already exists.",
+                "unknown_role": "Not created: the role must be admin, teacher or learner."}
     try:
         user = accounts.create_user(args.username, password, args.role, args.name)
     except accounts.AccountError as error:
-        sys.exit(str(error))
+        sys.exit(messages.get(str(error), f"Not created: {error}"))
     print(f"Created {user['role']} account '{args.username}' ({user['name']}).")
 
 
